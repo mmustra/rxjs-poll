@@ -1,0 +1,16 @@
+{
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "arrowParens": "always",
+  "semi": true,
+  "tabWidth": 2,
+  "printWidth": 120,
+  "overrides": [
+    {
+      "files": "**/*.md",
+      "options": {
+        "printWidth": 80
+      }
+    }
+  ]
+}

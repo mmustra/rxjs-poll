@@ -1,0 +1,27 @@
+{
+  "git": {
+    "requireBranch": "main",
+    "commitMessage": "chore: release v${version}",
+    "publish": true,
+    "requireCommits": true
+  },
+  "github": {
+    "release": true
+  },
+  "hooks": {
+    "before:init": ["git pull", "npm run lint", "npm run test"]
+  },
+  "plugins": {
+    "@release-it/conventional-changelog": {
+      "preset": "angular",
+      "ignoreRecommendedBump": true,
+      "gitRawCommitsOpts": {
+        "merges": null
+      },
+      "parserOpts": {
+        "mergePattern": "^Merge pull request #(\\d+) from (.*)$",
+        "mergeCorrespondence": ["id", "source"]
+      }
+    }
+  }
+}
