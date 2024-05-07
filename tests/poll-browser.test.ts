@@ -7,13 +7,14 @@ import { poll } from '../src/poll';
 
 beforeEach(() => {
   jest.clearAllMocks();
-  document.addEventListener = originalListener;
   setPageActive(true);
 
   testScheduler = new TestScheduler((actual, expected) => {
     expect(actual).toEqual(expected);
   });
 });
+
+jest.spyOn(Math, 'random').mockReturnValue(0.123456789);
 
 describe('Browser Environment', () => {
   it('Should poll with default values', () => {
@@ -33,8 +34,6 @@ describe('Browser Environment', () => {
   });
 
   it('Should poll with random delay', () => {
-    jest.spyOn(Math, 'random').mockReturnValue(0.123456789);
-
     const delayRange = [1000, 2000] as MinMax;
     const outputDelay = randomNumber(...delayRange) - 1;
 
@@ -112,21 +111,25 @@ describe('Browser Environment', () => {
   it('Should poll when switching page to active', () => {
     setPageActive(false);
 
-    testScheduler.run(({ expectObservable }) => {
-      // Ref: https://github.com/jiayihu/rx-polling/blob/master/test/index.spec.ts#L98
-      document.addEventListener = (eventType: string, listener: any) => {
+    // Ref: https://github.com/jiayihu/rx-polling/blob/master/test/index.spec.ts#L98
+    const addEventListener = jest
+      .spyOn(document, 'addEventListener')
+      .mockImplementation((eventType: string, listener: any) =>
         timer(4).subscribe(() => {
           setPageActive(true);
           // eslint-disable-next-line
           listener();
-        });
-      };
+        })
+      );
 
+    testScheduler.run(({ expectObservable }) => {
       const source$ = of('a');
       const expected = '----(a|)';
 
       expectObservable(source$.pipe(poll({ isBackgroundMode: false }), take(1))).toBe(expected);
     });
+
+    addEventListener.mockRestore();
   });
 
   it('Should not error for consecutive rule "true"', () => {
@@ -154,8 +157,6 @@ describe('Browser Environment', () => {
   });
 
   it('Should allow static and random number when using delay function', () => {
-    jest.spyOn(Math, 'random').mockReturnValue(0.123456789);
-
     const pollDelay = 1000;
     const delayRange = [1000, 2000] as MinMax;
     const randomDelay = randomNumber(...delayRange) - 1;
@@ -319,8 +320,6 @@ describe('Browser Environment', () => {
 });
 
 let testScheduler: TestScheduler;
-const originalListener = document.addEventListener;
-
 function setPageActive(isActive: boolean) {
   // NOTE recommended for handling "document.hidden", but currently won't work with jsdom.reconfigure()
   // ref: https://github.com/jestjs/jest/issues/7142#issuecomment-429101915

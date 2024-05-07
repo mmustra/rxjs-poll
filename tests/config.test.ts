@@ -5,6 +5,8 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
+jest.spyOn(Math, 'random').mockReturnValue(0.123456789);
+
 describe('Config', () => {
   it('Should handle empty inputs', () => {
     expect(mapToControl()).toEqual(controlConfig);
@@ -15,8 +17,6 @@ describe('Config', () => {
   });
 
   it('Should fallback to defaults when partial input', () => {
-    jest.spyOn(Math, 'random').mockReturnValue(0.123456789);
-
     expect(mapToControl({ delay: null })).toEqual({
       ...controlConfig,
     });
@@ -57,8 +57,6 @@ describe('Config', () => {
   });
 
   it('Should fallback to defaults when delay is infinity', () => {
-    jest.spyOn(Math, 'random').mockReturnValue(0.123456789);
-
     expect(mapToControl({ delay: Infinity })).toEqual(controlConfig);
 
     expect(mapToControl({ delay: [0, Infinity] })).toEqual({
@@ -73,8 +71,6 @@ describe('Config', () => {
   });
 
   it('Should fallback to defaults when NaN', () => {
-    jest.spyOn(Math, 'random').mockReturnValue(0.123456789);
-
     expect(mapToControl({ delay: NaN, retries: NaN })).toEqual(controlConfig);
 
     expect(mapToControl({ delay: [NaN, NaN] })).toEqual({
@@ -84,8 +80,6 @@ describe('Config', () => {
   });
 
   it('Should guarantee absolute numbers', () => {
-    jest.spyOn(Math, 'random').mockReturnValue(0.123456789);
-
     expect(mapToControl({ delay: -2500, retries: -10 })).toEqual({
       ...controlConfig,
       delay: 2500,
