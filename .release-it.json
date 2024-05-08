@@ -9,7 +9,7 @@
     "release": true
   },
   "hooks": {
-    "before:init": ["git config --global pull.ff true", "git pull", "npm run lint", "npm run test"]
+    "before:init": ["git pull origin main", "npm run lint", "npm run test"]
   },
   "plugins": {
     "@release-it/conventional-changelog": {
