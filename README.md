@@ -1,8 +1,8 @@
 # RxJS Polling Operator
 
-![NPM Version](https://img.shields.io/npm/v/rxjs-poll)
-![NPM Bundle Size](https://img.shields.io/bundlephobia/minzip/rxjs-poll?label=gzip)
-![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/mmustra/rxjs-poll)
+<a href="https://www.npmjs.com/package/rxjs-poll" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Version" src="https://img.shields.io/npm/v/rxjs-poll"></a>
+<a href="https://bundlephobia.com/package/rxjs-poll@latest" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Bundle Size" src="https://img.shields.io/bundlephobia/minzip/rxjs-poll?label=gzip"></a>
+<a href="https://github.com/mmustra/rxjs-poll/issues" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/mmustra/rxjs-poll"></a>
 
 Library provides RxJS operator that can do polling on any completed source.
 
