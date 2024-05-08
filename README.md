@@ -1,5 +1,9 @@
 # RxJS Polling Operator
 
+![NPM Version](https://img.shields.io/npm/v/rxjs-poll)
+![NPM Bundle Size](https://img.shields.io/bundlephobia/minzip/rxjs-poll?label=gzip)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/mmustra/rxjs-poll)
+
 Library provides RxJS operator that can do polling on any completed source.
 
 **rxjs-poll** features:
