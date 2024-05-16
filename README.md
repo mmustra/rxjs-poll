@@ -15,7 +15,7 @@ Library provides RxJS operator that can do polling on any completed source.
 - Consecutive rule for **different retry attempts** approach
 - Config **input guard** for unexpected values
 - Supports browser and node environment
-- Compatible with RxJS v7 and v8
+- Compatible with RxJS v7+
 - Provides cjs and esm
 
 ## Installation
