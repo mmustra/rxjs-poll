@@ -3,7 +3,8 @@
     "requireBranch": "main",
     "commitMessage": "chore: release v${version}",
     "publish": true,
-    "requireCommits": true
+    "requireCommits": true,
+    "requireCleanWorkingDir": false
   },
   "github": {
     "release": true
