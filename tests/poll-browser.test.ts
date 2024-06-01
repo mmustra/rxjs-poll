@@ -1,9 +1,9 @@
 import { delay, delayWhen, from, last, map, mergeMap, of, raceWith, take, takeWhile, throwError, timer } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
+import { poll } from '../src';
 import { controlConfig } from '../src/common/config';
 import { MinMax, randomNumber } from '../src/common/utils';
-import { poll } from '../src/poll';
 
 beforeEach(() => {
   jest.clearAllMocks();

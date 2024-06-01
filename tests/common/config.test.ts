@@ -1,5 +1,5 @@
-import { controlConfig, ControlPollConfig, normalizeConfig, PollConfig, PollState } from '../src/common/config';
-import { Nil, sampleNumber } from '../src/common/utils';
+import { controlConfig, ControlPollConfig, normalizeConfig, PollConfig, PollState } from '../../src/common/config';
+import { Nil, sampleNumber } from '../../src/common/utils';
 
 beforeEach(() => {
   jest.clearAllMocks();

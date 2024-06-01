@@ -5,7 +5,7 @@
 import { delay, of, raceWith, take } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
-import { poll } from '../src/poll';
+import { poll } from '../src';
 
 beforeEach(() => {
   testScheduler = new TestScheduler((actual, expected) => {
