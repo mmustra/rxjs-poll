@@ -36,7 +36,7 @@
     "lint": "eslint ./src ./tests --ext .js,.ts",
     "lint:fix": "npm run lint -- --fix",
     "util:packageJson": "ts-node ./scripts/generate-package-json.ts",
-    "util:clean": "fse remove ./dist",
+    "util:clean": "fse remove ./dist && fse remove ./coverage",
     "util:commitlint": "commitlint",
     "util:lint-staged": "lint-staged"
   },
