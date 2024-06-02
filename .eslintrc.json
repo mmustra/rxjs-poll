@@ -34,6 +34,7 @@
       { "vars": "all", "varsIgnorePattern": "^_", "args": "after-used", "argsIgnorePattern": "^_" }
     ],
     "no-warning-comments": "off",
+    "capitalized-comments": "off",
     "prefer-object-spread": "off",
     "simple-import-sort/imports": "error",
     "simple-import-sort/exports": "error",
