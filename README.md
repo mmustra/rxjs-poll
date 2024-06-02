@@ -11,7 +11,7 @@ Library provides RxJS operator that can do polling on any completed source.
 
 - Two types of polling; `repeat` and `interval`
 - Delay/retry can be a **static**, **random** or **dynamic** number
-- Any **backoff strategy** you can think of
+- Any **delay/backoff strategy** you can think of
 - Background mode (browser only) to **pause/resume polling** on page visibility
 - Consecutive rule for **different retry attempts** approach
 - Config **input guard** for unexpected values
@@ -85,7 +85,7 @@ request$
 
 ### Advance
 
-Use delay function when you need complex logic for polling or retrying. The state provides data that can be used for unique backoff strategies.
+Use delay function when you need unique delay or backoff strategies for polling/retrying.
 
 [Demo](https://stackblitz.com/edit/rxjs-awthuj?devtoolsheight=100&file=index.ts)
 
@@ -97,7 +97,7 @@ request$
   .pipe(
     poll({
       retries: 6,
-      delay: ({ polls, consecutiveRetries, error }) => {
+      delay: ({ polls, consecutiveRetries, value, error }) => {
         const delay = 1000;
 
         if (error) {
@@ -106,8 +106,8 @@ request$
           return Math.pow(2, consecutiveRetries - 1) * delay;
         }
 
-        // Faster polls initially
-        return polls < 5 ? delay * 0.5 : delay;
+        // Faster polls for shorther facts
+        return value.length < 100 ? delay * 0.3 : delay;
       },
     }),
     takeWhile(({ length }) => length < 200, true)
@@ -196,10 +196,11 @@ const config: PollConfig = {
 Provided as argument of delay function. Use it to set delay for polls and retries.
 
 ```typescript
-interface PollState {
+interface PollState<T> {
   polls: number; // current count of successful polls
   retries: number; // current count of retries
   consecutiveRetries: number; // current count of consecutive retries
+  value: T; // value emitted from the source
   error: any | null; // "any" when retrying and "null" when polling
 }
 

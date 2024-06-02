@@ -185,6 +185,45 @@ describe('Browser Environment', () => {
     });
   });
 
+  it('Should get delay from value using delay function - repeat', () => {
+    testScheduler.run(({ expectObservable }) => {
+      let counter = 0;
+      const counterMax = 3;
+      const source$ = of('a').pipe(map(() => 'x'.repeat(++counter)));
+      const expected = `${controlConfig.delay * triangular(counterMax - 1)}ms (a|)`;
+
+      expectObservable(
+        source$.pipe(
+          poll({
+            delay: ({ value }) => value.length * controlConfig.delay,
+          }),
+          take(counterMax),
+          last()
+        )
+      ).toBe(expected, { a: 'x'.repeat(counterMax) });
+    });
+  });
+
+  it('Should get delay from value using delay function - interval', () => {
+    testScheduler.run(({ expectObservable }) => {
+      let counter = 0;
+      const counterMax = 5;
+      const source$ = of('a').pipe(map(() => 'x'.repeat(++counter)));
+      const expected = `${controlConfig.delay * triangular(counterMax - 1)}ms (a|)`;
+
+      expectObservable(
+        source$.pipe(
+          poll({
+            type: 'interval',
+            delay: ({ value }) => value.length * controlConfig.delay,
+          }),
+          take(counterMax),
+          last()
+        )
+      ).toBe(expected, { a: 'x'.repeat(counterMax) });
+    });
+  });
+
   it('Should have backoff strategy for consecutive retries', () => {
     testScheduler.run(({ expectObservable }) => {
       let counter = 0;
@@ -328,4 +367,14 @@ function setPageActive(isActive: boolean) {
     value: !isActive,
     configurable: true,
   });
+}
+
+function triangular(value: number): number {
+  let a = 0;
+
+  for (let i = 1; i <= value; i++) {
+    a += i;
+  }
+
+  return a;
 }

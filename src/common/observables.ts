@@ -1,20 +1,26 @@
-import { fromEvent, map, Observable, of, repeat, shareReplay, startWith, switchMap, takeLast, timer } from 'rxjs';
+import { fromEvent, map, Observable, of, repeat, shareReplay, startWith, switchMap, takeLast, tap, timer } from 'rxjs';
 
 import { PollType } from './config';
 import { isBrowser, isDocumentVisible } from './utils';
 
 export const visibilityState$ = pageVisibility$().pipe(shareReplay({ bufferSize: 1, refCount: true }));
 
-export function getPoller$<T>(type: PollType, source$: Observable<T>, getDelay: () => number): Observable<T> {
-  const completed$ = source$.pipe(takeLast(1));
+export function getPoller$<T>(type: PollType, source$: Observable<T>, getDelay: (value: T) => number): Observable<T> {
+  let lastValue: T;
+  const completed$ = source$.pipe(
+    takeLast(1),
+    tap((value) => {
+      lastValue = value;
+    })
+  );
 
   return type === 'repeat'
     ? completed$.pipe(
         repeat({
-          delay: () => timer(getDelay()),
+          delay: () => timer(getDelay(lastValue)),
         })
       )
-    : dynamicInterval$(getDelay).pipe(switchMap(() => completed$));
+    : dynamicInterval$(() => getDelay(lastValue)).pipe(switchMap(() => completed$));
 }
 
 function pageVisibility$(): Observable<boolean> {

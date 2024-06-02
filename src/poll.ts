@@ -31,19 +31,22 @@ import { Nil } from './common/utils';
  * @return A function that returns an Observable that will resubscribe to the source on \
  * complete or error
  */
-export function poll<T>(config?: PollConfig | Nil): MonoTypeOperatorFunction<T> {
+export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<T> {
   return (source$) => {
     const { type, retries, isBackgroundMode, isConsecutiveRule, getDelay } = normalizeConfig(config);
     const retryKey: RetryKey = isConsecutiveRule ? 'consecutiveRetries' : 'retries';
-    const state: PollState = {
+    const state: PollState<T> = {
       polls: 0,
       retries: 0,
       consecutiveRetries: 0,
+      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+      value: null as any,
       error: null,
     };
 
-    const nextPollDelay = (): number => {
+    const nextPollDelay = (value: T): number => {
       state.polls += 1;
+      state.value = value;
 
       return getDelay(state);
     };

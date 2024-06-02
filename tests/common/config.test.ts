@@ -98,7 +98,7 @@ describe('Config', () => {
   });
 
   it('Should not mutate counters of PollState', () => {
-    const state: PollState = { ...controlState };
+    const state: PollState<any> = { ...controlState };
 
     const { getDelay } = normalizeConfig({
       delay(state) {
@@ -116,7 +116,7 @@ describe('Config', () => {
   });
 });
 
-function mapToControl(config?: PollConfig | Nil): ControlPollConfig {
+function mapToControl(config?: PollConfig<any> | Nil): ControlPollConfig<any> {
   const { getDelay, ...others } = normalizeConfig(config);
 
   return {
@@ -125,9 +125,10 @@ function mapToControl(config?: PollConfig | Nil): ControlPollConfig {
   };
 }
 
-const controlState: PollState = {
+const controlState: PollState<any> = {
   polls: 0,
   retries: 0,
   consecutiveRetries: 0,
+  value: null,
   error: null,
 };
