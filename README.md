@@ -85,7 +85,7 @@ request$
 
 ### Advance
 
-Use delay function when you need unique delay or backoff strategies for polling/retrying.
+Use delay function with provided [state](#PollState) when you need unique delay or backoff strategies for polling/retrying.
 
 [Demo](https://stackblitz.com/edit/rxjs-awthuj?devtoolsheight=100&file=index.ts)
 
@@ -97,7 +97,7 @@ request$
   .pipe(
     poll({
       retries: 6,
-      delay: ({ polls, consecutiveRetries, value, error }) => {
+      delay: ({ value, error, consecutiveRetries }) => {
         const delay = 1000;
 
         if (error) {
