@@ -106,7 +106,7 @@ request$
           return Math.pow(2, consecutiveRetries - 1) * delay;
         }
 
-        // Faster polls for shorther facts
+        // Faster polls for shorter facts
         return value.length < 100 ? delay * 0.3 : delay;
       },
     }),
