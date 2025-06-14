@@ -37,8 +37,8 @@
     "lint": "eslint ./src ./tests",
     "lint:fix": "npm run lint -- --fix",
     "util:packageJson": "cross-env TS_NODE_PROJECT='./ts-configs/tsconfig.scripts.json' ts-node ./scripts/generate-package-json.ts",
-    "util:clean:dist": "fse remove ./dist",
-    "util:clean:coverage": "fse remove ./coverage",
+    "util:clean:dist": "rimraf ./dist --no-preserve-root --no-interactive",
+    "util:clean:coverage": "rimraf ./coverage --no-preserve-root --no-interactive",
     "util:commitlint": "commitlint",
     "util:lint-staged": "lint-staged"
   },
@@ -67,7 +67,6 @@
     "rxjs": ">=7 || ^8.0.0-alpha.0 || ^8.0.0-beta.0 || ^8.0.0-rc.0"
   },
   "devDependencies": {
-    "@atao60/fse-cli": "^0.1.9",
     "@commitlint/cli": "^19.8.1",
     "@commitlint/config-conventional": "^19.8.1",
     "@commitlint/types": "^19.8.1",
@@ -95,6 +94,7 @@
     "jest-environment-node": "^30.0.0",
     "lint-staged": "^16.1.1",
     "release-it": "^19.0.3",
+    "rimraf": "^6.0.1",
     "rxjs": "^7.8.2",
     "ts-jest": "^29.4.0",
     "ts-node": "^10.9.2",
