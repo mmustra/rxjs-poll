@@ -6,49 +6,37 @@
 <a href="https://github.com/mmustra/rxjs-poll/issues" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/mmustra/rxjs-poll"></a>
 <a href="https://github.com/mmustra/rxjs-poll/commits/main" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/mmustra/rxjs-poll/main?label=activity"></a>
 
-Library provides RxJS operator that can do polling on any completed source.
+A flexible RxJS operator library that enables polling on any completed observable source with advanced configuration options.
 
-**rxjs-poll** features:
+## 🌟 Features
 
-- Two types of polling; `repeat` and `interval`
-- Delay/retry can be a **static**, **random** or **dynamic** number
-- Any **delay/backoff strategy** you can think of
-- Background mode (browser only) to **pause/resume polling** on page visibility
-- Consecutive rule for **different retry attempts** approach
-- Config **input guard** for unexpected values
-- Supports browser and node environment
-- Compatible with RxJS v7+
-- Provides cjs and esm
+- **Two polling modes**: `repeat` and `interval` to suit different use cases
+- **Flexible delay configuration**: Use static, random, or dynamic delay values
+- **Custom backoff strategies**: Implement any delay/backoff logic you need
+- **Background mode**: Automatically pause/resume polling based on page visibility (browser only)
+- **Consecutive error handling**: Configure how retry attempts are managed
+- **Input validation**: Guards against unexpected configuration values
+- **Cross-platform**: Works in both browser and Node.js environments
+- **Modern compatibility**: Compatible with RxJS v7+
+- **Multiple module formats**: Supports CommonJS (CJS) and ES Modules (ESM)
 
-## Installation
+## 📦 Installation
 
 ```shell
 npm install rxjs-poll --save
 ```
 
-## Usage
+## 🔄 How It Works
 
-Let's say that you want to poll fun facts about cats. This is the request:
+The emission(s) passes through until the source completes. Once the source completes, polling begins according to your configuration. Depending on the type: `repeat` mode waits for source to complete before polling again, while `interval` mode polls at fixed intervals, canceling ongoing operations. Error handling respects retry settings and consecutive rules.
 
-```typescript
-import { ajax } from 'rxjs/ajax';
-import { map } from 'rxjs';
+## 📚 Usage Examples
 
-interface CatFact {
-  fact: string;
-  length: number;
-}
+### Default Configuration
 
-const request$ = ajax<CatFact>({ url: 'https://catfact.ninja/fact' }).pipe(
-  map(({ response }) => response)
-);
-```
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-6nrm8l?devToolsHeight=100&file=index.ts)
 
-### Default
-
-Plug and play, just add an operator to your pipe and poll.
-
-[Demo](https://stackblitz.com/edit/rxjs-6nrm8l?devToolsHeight=100&file=index.ts)
+Plug and play - just add the operator to your pipe and start polling.
 
 ```typescript
 import { poll } from 'rxjs-poll';
@@ -56,17 +44,17 @@ import { takeWhile } from 'rxjs';
 
 request$
   .pipe(
-    poll(),
+    poll(), // Use default settings
     takeWhile(({ length }) => length < 200, true)
   )
   .subscribe({ next: console.log });
 ```
 
-### Basic
+### Custom Configuration
 
-With a config file you can customize polling to your specific needs.
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-obywba?devToolsHeight=100&file=index.ts)
 
-[Demo](https://stackblitz.com/edit/rxjs-obywba?devToolsHeight=100&file=index.ts)
+Customize polling behavior with a configuration object:
 
 ```typescript
 import { poll } from 'rxjs-poll';
@@ -77,18 +65,18 @@ request$
     poll({
       type: 'interval', // Drops uncompleted source after delay
       retries: Infinity, // Will never throw
-      delay: [1000, 2000], // Random delay with min and max values
+      delay: [1000, 2000], // Random delay between 1 and 2 seconds
     }),
     takeWhile(({ length }) => length < 200, true)
   )
   .subscribe({ next: console.log });
 ```
 
-### Advance
+### Advanced Strategies
 
-Use delay function with provided [state](#PollState) when you need unique delay or backoff strategies for polling/retrying.
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-awthuj?devtoolsheight=100&file=index.ts)
 
-[Demo](https://stackblitz.com/edit/rxjs-awthuj?devtoolsheight=100&file=index.ts)
+Implement complex polling strategies with dynamic delay functions:
 
 ```typescript
 import { poll } from 'rxjs-poll';
@@ -99,16 +87,16 @@ request$
     poll({
       retries: 6,
       delay: ({ value, error, consecutiveRetries }) => {
-        const delay = 1000;
+        const baseDelay = 1000;
 
         if (error) {
           // Exponential backoff strategy
           // With 6 retries, throws after ~1min of consecutive errors
-          return Math.pow(2, consecutiveRetries - 1) * delay;
+          return Math.pow(2, consecutiveRetries - 1) * baseDelay;
         }
 
-        // Faster polls for shorter facts
-        return value.length < 100 ? delay * 0.3 : delay;
+        // Adaptive polling based on response data
+        return value.length < 100 ? baseDelay * 0.3 : baseDelay;
       },
     }),
     takeWhile(({ length }) => length < 200, true)
@@ -116,102 +104,94 @@ request$
   .subscribe({ next: console.log });
 ```
 
-## API
+## 📋 API Reference
 
-### poll(config)
+### `poll(config?: PollConfig)`
 
-It is a mono type operator function that will poll once a **source completes**. If the source is not completed, the operator will wait until that happens. First emission is sent immediately, then the polling will start. Values will emit until stopped by the user.
+Creates a polling operator that will begin polling once the source observable completes.
 
-```typescript
-source$.pipe(poll({ type: 'repeat', retries: 10 }));
-```
-
-### PollConfig
-
-Configuration object used to setup polling mechanism. Any non-assigned, negative or invalid values will be replaced with default configuration values.
+#### PollConfig
 
 ```typescript
 interface PollConfig {
   /**
-   * Poller type
-   *
-   * repeat - polls after current source completes
-   * interval - polls in intervals and drops source that is not complete
+   * Defines the polling behavior:
+   * - 'repeat': Polls after current source completes
+   * - 'interval': Polls in intervals, dropping any ongoing source operations
+   * @default 'repeat'
    */
-  type: 'repeat' | 'interval';
+  type?: 'repeat' | 'interval';
 
   /**
-   * Delay between polls and retries
+   * Delay between polls and retries in milliseconds
    *
-   * Use static or random number with min and max values. If you need
-   * dynamic number, use function and return either static or random number.
-   * Numbers should be positive and finate.
+   * Can be:
+   * - A static number (e.g., 1000 for 1 second)
+   * - An array with [min, max] for random delay
+   * - A function returning either of the above based on state
+   * @default 1000
    */
-  delay:
+  delay?:
     | number
-    | [number | number]
-    | ((state: PollState) => number | [number | number]);
+    | [number, number]
+    | ((state: PollState) => number | [number, number]);
 
   /**
-   * Number of retries
-   *
-   * Number of retries before it will throw. Number should be positive, but
-   * it can be Infinity if you don't care about errors.
+   * Maximum number of retry attempts before throwing an error
+   * Use Infinity to keep retrying indefinitely
+   * @default 3
    */
-  retries: number;
+  retries?: number;
 
   /**
-   * Retry's counting approach
-   *
-   * If true, then only consecutive error count will be checked against
-   * retires. Consecutive error count is reset to 0 on successful response.
-   * If false, then any number of errors will be checked against retires.
+   * Controls how retries are counted:
+   * - true: Only consecutive errors count toward retry limit
+   *   (resets counter on success)
+   * - false: All errors count toward retry limit regardless of
+   *   successful responses between them
+   * @default true
    */
-  isConsecutiveRule: boolean;
+  isConsecutiveRule?: boolean;
 
   /**
-   * Pause/resume polling - browser only
-   *
-   * Polling can be paused/resumed depending on page visibility.
-   * ex. If this is false and you switch to another tab, polling is paused.
-   * Once you go back, polling resumes.
+   * [Browser only] Controls polling behavior when page isn't visible
+   * - true: Continue polling when tab/window isn't focused
+   * - false: Pause polling when tab/window loses focus, resume when focus returns
+   * @default false
    */
-  isBackgroundMode: boolan;
+  isBackgroundMode?: boolean;
 }
-```
-
-#### Defaults
-
-```typescript
-const config: PollConfig = {
-  type: 'repeat',
-  delay: 1000,
-  retries: 3,
-  isConsecutiveRule: true,
-  isBackgroundMode: false,
-};
 ```
 
 ### PollState
 
-Provided as argument of delay function. Use it to set delay for polls and retries.
+State object passed to dynamic delay functions:
 
 ```typescript
 interface PollState<T> {
-  polls: number; // current count of successful polls
-  retries: number; // current count of retries
-  consecutiveRetries: number; // current count of consecutive retries
-  value: T; // value emitted from the source
-  error: any | null; // "any" when retrying and "null" when polling
+  /** Number of successful poll operations */
+  polls: number;
+
+  /** Total number of retry attempts */
+  retries: number;
+
+  /** Number of consecutive retry attempts without success */
+  consecutiveRetries: number;
+
+  /** Latest value emitted from the source */
+  value: T;
+
+  /** Error object when retrying, null during normal polling */
+  error: any | null;
 }
 
-// polls + retries = total attempts
+// Note: polls + retries = total attempts
 ```
 
-## Credits
+## 🙌 Credits
 
-This library is inspired by the [rx-polling](https://github.com/jiayihu/rx-polling) that creates Observable for polling.
+This library is inspired by [rx-polling](https://github.com/jiayihu/rx-polling), which creates an Observable for polling.
 
-## License
+## 📄 License
 
 [MIT](LICENSE)
