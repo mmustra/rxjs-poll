@@ -35,10 +35,6 @@ export function isFunction(value: unknown): value is (...args: any[]) => any {
   return typeof value === 'function';
 }
 
-export function isNil(value: unknown): value is Nil {
-  return value == null;
-}
-
 export function isBrowser(): boolean {
   return typeof globalThis.window !== 'undefined' && typeof globalThis.window.document !== 'undefined';
 }

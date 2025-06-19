@@ -1,4 +1,4 @@
-import { isNil, normalizeNumber } from '../../src/common/utils';
+import { normalizeNumber } from '../../src/common/utils';
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -50,31 +50,6 @@ describe('Utils', () => {
 
       expect(normalizeNumber(expected, 0, false)).toEqual(expected);
       expect(normalizeNumber(null, expected)).toEqual(expected);
-    });
-  });
-
-  describe('isNil', () => {
-    it('Should return true for null', () => {
-      expect(isNil(null)).toBe(true);
-    });
-
-    it('Should return true for undefined', () => {
-      expect(isNil(undefined)).toBe(true);
-    });
-
-    it('Should return false for falsy non-nil values', () => {
-      expect(isNil(0)).toBe(false);
-      expect(isNil('')).toBe(false);
-      expect(isNil(false)).toBe(false);
-      expect(isNil(NaN)).toBe(false);
-    });
-
-    it('Should return false for truthy values', () => {
-      expect(isNil(1)).toBe(false);
-      expect(isNil('string')).toBe(false);
-      expect(isNil(true)).toBe(false);
-      expect(isNil({})).toBe(false);
-      expect(isNil([])).toBe(false);
     });
   });
 });
