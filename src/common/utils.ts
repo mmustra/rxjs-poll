@@ -11,36 +11,31 @@ export function normalizeNumber(
   isFinite = true
 ): number | MinMax {
   if (Array.isArray(value)) {
-    return value.map((n) => normalizeNumber(n, defaultValue)) as MinMax;
+    return value.map((n) => normalizeNumber(n, defaultValue, isFinite)) as MinMax;
   }
 
-  let singleValue = value ?? defaultValue;
+  let normalizedValue = value ?? defaultValue;
 
-  if (Number.isNaN(singleValue)) {
-    singleValue = defaultValue;
+  if (Number.isNaN(normalizedValue) || (isFinite && !Number.isFinite(normalizedValue))) {
+    normalizedValue = defaultValue;
   }
 
-  if (isFinite && !Number.isFinite(singleValue)) {
-    singleValue = defaultValue;
-  }
-
-  return Math.abs(singleValue);
+  return Math.abs(normalizedValue);
 }
 
 export function sampleNumber(value: number | MinMax): number {
-  return Array.isArray(value) ? randomNumber(...value) : value;
+  return Array.isArray(value) ? randomNumber(value[0], value[1]) : value;
 }
 
 export function randomNumber(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function isFunction(value: any): value is (...args: any[]) => any {
+export function isFunction(value: unknown): value is (...args: any[]) => any {
   return typeof value === 'function';
 }
 
-export function isNil(value: any): value is Nil {
-  /* eslint-disable no-eq-null, eqeqeq */
+export function isNil(value: unknown): value is Nil {
   return value == null;
 }
 

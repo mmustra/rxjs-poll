@@ -1,11 +1,11 @@
-import { isFunction, isNil, Nil, normalizeNumber, sampleNumber, UnsafeMinMax } from './utils';
+import { isFunction, Nil, normalizeNumber, sampleNumber, UnsafeMinMax } from './utils';
 
 export function normalizeConfig<T>(config?: PollConfig<T> | Nil): NormalizedPollConfig<T> {
   return {
     type: config?.type ?? controlConfig.type,
     getDelay: isFunction(config?.delay) ? delayProducer(config.delay) : defaultProducer(config?.delay),
     retries: normalizeNumber(config?.retries, controlConfig.retries, false),
-    isConsecutiveRule: isNil(config?.isConsecutiveRule) ? true : config.isConsecutiveRule,
+    isConsecutiveRule: config?.isConsecutiveRule ?? true,
     isBackgroundMode: Boolean(config?.isBackgroundMode),
   };
 }
@@ -31,7 +31,7 @@ export const controlConfig: ControlPollConfig<any> = {
   retries: 3,
   isConsecutiveRule: true,
   isBackgroundMode: false,
-};
+} as const;
 
 export type ControlPollConfig<T> = {
   delay: number;
