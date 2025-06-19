@@ -54,7 +54,7 @@ request$
 
 [▶️ Live Demo](https://stackblitz.com/edit/rxjs-obywba?devToolsHeight=100&file=index.ts)
 
-Customize polling behavior with a configuration object:
+Customize polling behavior with a configuration object.
 
 ```typescript
 import { poll } from 'rxjs-poll';
@@ -76,7 +76,7 @@ request$
 
 [▶️ Live Demo](https://stackblitz.com/edit/rxjs-awthuj?devtoolsheight=100&file=index.ts)
 
-Implement complex polling strategies with dynamic delay functions:
+Implement complex polling strategies with dynamic delay functions.
 
 ```typescript
 import { poll } from 'rxjs-poll';
