@@ -117,7 +117,7 @@ describe('Browser Environment', () => {
       .mockImplementation((eventType: string, listener: any) =>
         timer(4).subscribe(() => {
           setPageActive(true);
-          // eslint-disable-next-line
+
           listener();
         })
       );
@@ -342,7 +342,6 @@ describe('Browser Environment', () => {
           poll({
             type: 'repeat',
             delay({ error }) {
-              /* eslint-disable no-implicit-coercion */
               totalErrors += Number(!!error);
 
               return 1000;

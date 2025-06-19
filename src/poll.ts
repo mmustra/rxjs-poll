@@ -39,7 +39,7 @@ export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<
       polls: 0,
       retries: 0,
       consecutiveRetries: 0,
-      /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
       value: null as any,
       error: null,
     };
@@ -60,12 +60,10 @@ export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<
           ? poller$.pipe(
               retry({
                 delay(error) {
-                  /* eslint-disable @typescript-eslint/no-unsafe-assignment */
                   state.error = error;
                   state.retries += 1;
                   state.consecutiveRetries += 1;
 
-                  /* eslint-disable @typescript-eslint/no-unsafe-return */
                   return state[retryKey] > retries ? throwError(() => error) : timer(getDelay(state));
                 },
               }),

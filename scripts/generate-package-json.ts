@@ -16,7 +16,5 @@ modules.forEach((module) => {
   const packageJsonPath = resolve(process.cwd(), `./dist/${name}/package.json`);
 
   console.log(`Generating package.json for "${name}"`);
-
-  /* eslint-disable @typescript-eslint/no-floating-promises */
   writeJSON(packageJsonPath, packageJson, { spaces: 2 });
 });

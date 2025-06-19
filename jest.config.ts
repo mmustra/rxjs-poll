@@ -11,7 +11,6 @@ const jestConfig: JestConfigWithTsJest = {
     },
   },
   transform: {
-    /* eslint-disable @typescript-eslint/naming-convention */
     '\\.[jt]sx?$': [
       'ts-jest',
       {
