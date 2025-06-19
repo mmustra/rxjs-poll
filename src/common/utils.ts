@@ -40,7 +40,7 @@ export function isNil(value: unknown): value is Nil {
 }
 
 export function isBrowser(): boolean {
-  return typeof window !== 'undefined' && typeof window.document !== 'undefined';
+  return typeof globalThis.window !== 'undefined' && typeof globalThis.window.document !== 'undefined';
 }
 
 export function isDocumentVisible(): boolean {
