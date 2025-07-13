@@ -28,7 +28,7 @@ npm install rxjs-poll --save
 
 ## 🔄 How It Works
 
-The emission(s) passes through until the source completes. Once the source completes, polling begins according to your configuration. Depending on the type: `repeat` mode waits for source to complete before polling again, while `interval` mode polls at fixed intervals, canceling ongoing operations. Error handling respects retry settings and consecutive rules.
+Operator waits for source to complete, before polling can begin according to your configuration. Depending on the type: `repeat` mode waits for source to complete before polling again, while `interval` mode polls at fixed intervals, canceling ongoing operations. Error handling respects retry settings and consecutive rules.
 
 ## 📚 Usage Examples
 
