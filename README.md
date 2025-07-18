@@ -66,7 +66,7 @@ request$
     poll({
       type: 'interval', // Drops uncompleted source after delay
       delay: {
-        strategy: 'random'
+        strategy: 'random',
         time: [1000, 3000], // Random delay between 1 and 3 seconds
       },
       retry: {
