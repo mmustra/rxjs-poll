@@ -2,10 +2,12 @@
  * @jest-environment node
  */
 
-import { delay, of, raceWith, take } from 'rxjs';
+import { take } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
-import { poll } from '../src';
+import { poll } from '../src/poll';
+
+let testScheduler: TestScheduler;
 
 beforeEach(() => {
   testScheduler = new TestScheduler((actual, expected) => {
@@ -13,26 +15,36 @@ beforeEach(() => {
   });
 });
 
-describe('Node Environment', () => {
-  it('Should always poll when background mode is "true"', () => {
-    testScheduler.run(({ expectObservable }) => {
-      const source$ = of('a').pipe(poll({ delay: 2, isBackgroundMode: true }));
-      const timeout$ = of('b').pipe(delay(5000));
-      const expected = 'a-(a|)';
+describe('poll operator - extras', () => {
+  it('should always work in node env (pauseWhenHidden: true)', () => {
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('-a|', { a: 'success' });
 
-      expectObservable(source$.pipe(raceWith(timeout$), take(2))).toBe(expected);
+      const result$ = source$.pipe(
+        poll({
+          delay: { strategy: 'constant', time: 1 },
+          pauseWhenHidden: true,
+        }),
+        take(2)
+      );
+
+      expectObservable(result$).toBe('--a--(a|)', { a: 'success' });
     });
   });
 
-  it('Should always poll when background mode is "false"', () => {
-    testScheduler.run(({ expectObservable }) => {
-      const source$ = of('a').pipe(poll({ delay: 2, isBackgroundMode: false }));
-      const timeout$ = of('b').pipe(delay(5000));
-      const expected = 'a-(a|)';
+  it('should always work in node env (pauseWhenHidden: false)', () => {
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('-a|', { a: 'success' });
 
-      expectObservable(source$.pipe(raceWith(timeout$), take(2))).toBe(expected);
+      const result$ = source$.pipe(
+        poll({
+          delay: { strategy: 'constant', time: 1 },
+          pauseWhenHidden: false,
+        }),
+        take(2)
+      );
+
+      expectObservable(result$).toBe('--a--(a|)', { a: 'success' });
     });
   });
 });
-
-let testScheduler: TestScheduler;

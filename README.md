@@ -6,16 +6,15 @@
 <a href="https://github.com/mmustra/rxjs-poll/issues" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/mmustra/rxjs-poll"></a>
 <a href="https://github.com/mmustra/rxjs-poll/commits/main" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/mmustra/rxjs-poll/main?label=activity"></a>
 
-A flexible RxJS operator library that enables polling on any completed observable source with advanced configuration options.
+A flexible RxJS operator library that enables polling on any completed observable source with advanced timing and retry strategies.
 
-## 🌟 Features
+## 🚀 Features
 
 - **Two polling modes**: `repeat` and `interval` to suit different use cases
-- **Flexible delay configuration**: Use static, random, or dynamic delay values
-- **Custom backoff strategies**: Implement any delay/backoff logic you need
-- **Background mode**: Automatically pause/resume polling based on page visibility (browser only)
-- **Consecutive error handling**: Configure how retry attempts are managed
-- **Input validation**: Guards against unexpected configuration values
+- **Timing strategies**: `constant`, `linear`, `exponential`, `random` and `dynamic` (custom logic)
+- **Auto-pause**: Automatically pause/resume polling based on page visibility (browser only)
+- **Flexible retries**: Control retry attempts with consecutive or total counting modes
+- **Input validation**: Guards against unexpected input time values
 - **Cross-platform**: Works in both browser and Node.js environments
 - **Modern compatibility**: Compatible with RxJS v7+
 - **Multiple module formats**: Supports CommonJS (CJS) and ES Modules (ESM)
@@ -26,15 +25,17 @@ A flexible RxJS operator library that enables polling on any completed observabl
 npm install rxjs-poll --save
 ```
 
-## 🔄 How It Works
+## 🎯 Purpose & Process
 
-Operator waits for source to complete, before polling can begin according to your configuration. Depending on the type: `repeat` mode waits for source to complete before polling again, while `interval` mode polls at fixed intervals, canceling ongoing operations. Error handling respects retry settings and consecutive rules.
+Polling is essential when you need to repeatedly check for updates from sources that don't provide real-time notifications. Common scenarios include monitoring HTTP API endpoints for status changes, watching DOM elements for state updates, or periodically sampling data streams.
+
+This operator cleanly separates polling concerns from your core observable logic. It waits for your source observable to complete per polling type, then schedules the next poll based on your configuration. The architecture distinguishes between normal polling delays and error retry scenarios, giving you precise control over both success and failure timing strategies.
 
 ## 📚 Usage Examples
 
 ### Default Configuration
 
-[▶️ Live Demo](https://stackblitz.com/edit/rxjs-6nrm8l?devToolsHeight=100&file=index.ts)
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-xdf2x4vx?devToolsHeight=100&file=index.ts)
 
 Plug and play - just add the operator to your pipe and start polling.
 
@@ -44,17 +45,17 @@ import { takeWhile } from 'rxjs';
 
 request$
   .pipe(
-    poll(), // Use default settings
+    poll(), // Poll every second with exponential retry strategy (7s max)
     takeWhile(({ length }) => length < 200, true)
   )
   .subscribe({ next: console.log });
 ```
 
-### Custom Configuration
+### Strategy-Based Configuration
 
-[▶️ Live Demo](https://stackblitz.com/edit/rxjs-obywba?devToolsHeight=100&file=index.ts)
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-vrefdzj1?devToolsHeight=100&file=index.ts)
 
-Customize polling behavior with a configuration object.
+Use built-in strategies for easy timing control.
 
 ```typescript
 import { poll } from 'rxjs-poll';
@@ -64,19 +65,24 @@ request$
   .pipe(
     poll({
       type: 'interval', // Drops uncompleted source after delay
-      retries: Infinity, // Will never throw
-      delay: [1000, 2000], // Random delay between 1 and 2 seconds
+      delay: {
+        strategy: 'random'
+        time: [1000, 3000], // Random delay between 1 and 3 seconds
+      },
+      retry: {
+        limit: Infinity, // Will never throw
+      },
     }),
     takeWhile(({ length }) => length < 200, true)
   )
   .subscribe({ next: console.log });
 ```
 
-### Advanced Strategies
+### Advanced Dynamic Strategies
 
-[▶️ Live Demo](https://stackblitz.com/edit/rxjs-awthuj?devtoolsheight=100&file=index.ts)
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-6fmgfij8?devtoolsheight=100&file=index.ts)
 
-Implement complex polling strategies with dynamic delay functions.
+Implement complex polling strategies with dynamic timing based on poll state.
 
 ```typescript
 import { poll } from 'rxjs-poll';
@@ -85,18 +91,21 @@ import { takeWhile } from 'rxjs';
 request$
   .pipe(
     poll({
-      retries: 6,
-      delay: ({ value, error, consecutiveRetries }) => {
-        const baseDelay = 1000;
+      delay: {
+        /** Adaptive polling based on response data */
+        strategy: 'dynamic',
+        time: ({ value }) => (value?.length < 100 ? 500 : 1000),
+      },
+      retry: {
+        /** Custom exponential backoff with jitter */
+        strategy: 'dynamic',
+        time: ({ consecutiveRetryCount }) => {
+          const exponential = Math.pow(2, consecutiveRetryCount - 1) * 1000;
+          const jitter = Math.random() * 200;
 
-        if (error) {
-          // Exponential backoff strategy
-          // With 6 retries, throws after ~1min of consecutive errors
-          return Math.pow(2, consecutiveRetries - 1) * baseDelay;
-        }
-
-        // Adaptive polling based on response data
-        return value.length < 100 ? baseDelay * 0.3 : baseDelay;
+          return exponential + jitter;
+        },
+        limit: 6,
       },
     }),
     takeWhile(({ length }) => length < 200, true)
@@ -123,69 +132,220 @@ interface PollConfig {
   type?: 'repeat' | 'interval';
 
   /**
-   * Delay between polls and retries in milliseconds
-   *
-   * Can be:
-   * - A static number (e.g., 1000 for 1 second)
-   * - An array with [min, max] for random delay
-   * - A function returning either of the above based on state
-   * @default 1000
+   * Configuration for polling delays (between successful operations)
    */
-  delay?:
-    | number
-    | [number, number]
-    | ((state: PollState) => number | [number, number]);
+  delay?: {
+    /**
+     * Strategy mode for delay timing. Built-in strategies (except dynamic)
+     * calculate time per state's 'pollCount'.
+     * @default 'constant'
+     */
+    strategy: 'constant' | 'random' | 'dynamic';
+
+    /**
+     * Time (ms) depending on strategy:
+     * - constant: number
+     * - random: [min, max]
+     * - dynamic: (state) => number | [min, max]
+     * @default 1000
+     */
+    time:
+      | number
+      | [min: number, max: number]
+      | (state: PollState) => number | [min: number, max: number];
+  };
 
   /**
-   * Maximum number of retry attempts before throwing an error
-   * Use Infinity to keep retrying indefinitely
-   * @default 3
+   * Configuration for retry behavior (on errors)
    */
-  retries?: number;
+  retry?: {
+    /**
+     * Strategy mode for retry timing. Built-in strategies (except dynamic)
+     * calculate time per state:
+     * - consecutiveOnly: true → uses 'consecutiveRetryCount'
+     * - consecutiveOnly: false → uses 'retryCount'
+     * @default 'exponential'
+     */
+    mode: 'constant' | 'linear' | 'exponential' | 'random' | 'dynamic';
 
-  /**
-   * Controls how retries are counted:
-   * - true: Only consecutive errors count toward retry limit
-   *   (resets counter on success)
-   * - false: All errors count toward retry limit regardless of
-   *   successful responses between them
-   * @default true
-   */
-  isConsecutiveRule?: boolean;
+    /**
+     * Time (ms) depending on strategy:
+     * - constant: number
+     * - linear: number
+     * - exponential: number
+     * - random: [min, max]
+     * - dynamic: (state) => number | [min, max]
+     * @default 1000
+     */
+    time:
+      | number
+      | [min: number, max: number]
+      | (state: PollState) => number | [min: number, max: number];
+
+    /**
+     * Maximum number of retry attempts before throwing an error
+     * Use Infinity to keep retrying indefinitely
+     * @default 3
+     */
+    limit?: number;
+
+    /**
+     * Controls how retries are counted:
+     * - true: Only consecutive errors count toward retry limit
+     *   (resets counter on success)
+     * - false: All errors count toward retry limit regardless of
+     *   successful responses between them
+     * @default true
+     */
+    consecutiveOnly?: boolean;
+  };
 
   /**
    * [Browser only] Controls polling behavior when page isn't visible
-   * - true: Continue polling when tab/window isn't focused
-   * - false: Pause polling when tab/window loses focus, resume when focus returns
-   * @default false
+   * - true: Pause polling when tab isn't active, and resume on active
+   * - false: Poll even when tab isn't focused
+   * @default true
    */
-  isBackgroundMode?: boolean;
+  pauseWhenHidden?: boolean;
 }
 ```
 
 ### PollState
 
-State object passed to dynamic delay functions:
+State object passed to delay/retry time producer functions:
 
 ```typescript
 interface PollState<T> {
-  /** Number of successful poll operations */
-  polls: number;
+  /** Total number of successful poll operations */
+  pollCount: number;
 
   /** Total number of retry attempts */
-  retries: number;
+  retryCount: number;
 
-  /** Number of consecutive retry attempts without success */
-  consecutiveRetries: number;
+  /** Current number of consecutive retry attempts */
+  consecutiveRetryCount: number;
 
-  /** Latest value emitted from the source */
-  value: T;
+  /** Latest value from the source. For 'interval' polling mode,
+   * first emission is undefined. */
+  value: T | undefined;
 
-  /** Error object when retrying, null during normal polling */
-  error: any | null;
+  /** Latest error when retrying */
+  error: any | undefined;
 }
 
-// Note: polls + retries = total attempts
+/** Note: pollCount + retryCount = total attempts */
+```
+
+## 🚨 Breaking Changes
+
+**Version 2** introduces an API focused on strategy-based configuration. The new architecture separates concerns between normal polling behavior and error handling scenarios, with type safety and clear configuration intent. This makes it easier to choose timings from common patterns.
+
+### Changes
+
+#### PollConfig
+
+- **delay/retry**: Added configuration objects for polling and retry
+- **retries**: Renamed and moved to `retry.limit`
+- **isConsecutiveRule**: Renamed and moved to `retry.consecutiveOnly`
+- **isBackgroundMode**: Renamed to `pauseWhenHidden` and default behavior inverted (`false` → `true`)
+
+#### PollState
+
+- **polls**: Renamed to `pollCount`
+- **retries**: Renamed to `retryCount`
+- **consecutiveRetries**: Renamed to `consecutiveRetryCount`
+- **value**: Changed to type `T | undefined`
+- **error**: Changed to type `any | undefined`
+
+### Migration Examples
+
+### Basic
+
+**Before (v1.x)**
+
+```typescript
+poll({
+  type: 'interval',
+  delay: 2000, // Same timing for delay and retry
+  retries: 5,
+  isConsecutiveRule: false,
+});
+```
+
+**After (v2.x)**
+
+```typescript
+poll({
+  type: 'interval',
+  delay: {
+    strategy: 'constant',
+    time: 2000,
+  },
+  retry: {
+    strategy: 'constant',
+    time: 2000,
+    limit: 5,
+    consecutiveOnly: false,
+  },
+});
+```
+
+or if you only care about delay timing:
+
+```typescript
+poll({
+  type: 'interval',
+  delay: {
+    strategy: 'constant',
+    time: 2000,
+  },
+  retry: {
+    limit: 5,
+    consecutiveOnly: false,
+  },
+});
+```
+
+### Dynamic
+
+**Before (v1.x)**
+
+```typescript
+poll({
+  /** 'error' used as a flag to determine delay/retry timing */
+  delay: ({ error, consecutiveRetries }) =>
+    error ? consecutiveRetries * 1000 : 2000,
+});
+```
+
+**After (v2.x)**
+
+```typescript
+poll({
+  delay: {
+    strategy: 'constant',
+    time: 2000,
+  },
+  retry: {
+    strategy: 'dynamic',
+    time: ({ consecutiveRetryCount }) => consecutiveRetryCount * 1000,
+  },
+});
+```
+
+or with built-in strategy:
+
+```typescript
+poll({
+  delay: {
+    strategy: 'constant',
+    time: 2000,
+  },
+  retry: {
+    strategy: 'linear',
+    time: 1000,
+  },
+});
 ```
 
 ## 🙌 Credits

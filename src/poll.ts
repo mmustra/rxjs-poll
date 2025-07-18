@@ -1,14 +1,17 @@
-import { EMPTY, MonoTypeOperatorFunction, of, retry, switchMap, tap, throwError, timer } from 'rxjs';
+import { EMPTY, MonoTypeOperatorFunction, of, switchMap } from 'rxjs';
 
-import { normalizeConfig, PollConfig, PollState, RetryKey } from './common/config';
+import { extendConfig } from './common/config';
 import { getPoller$, visibilityState$ } from './common/observables';
-import { Nil } from './common/utils';
+import { retryPoll } from './common/operators';
+import { PollConfig } from './types/config.type';
+import { PollState, RetryKey } from './types/poll.type';
+import { Nil } from './types/utils.type';
 
 /**
  * ### RxJS Poll Operator
  *
- * Polls source using "repeat" or "interval" approach. First emission is sent immediately, \
- * then the polling will start. Values will emit until stopped by the user.
+ * Automatically re-executes a source observable after completion, \
+ * using delay strategies and retry mechanisms for handling errors.
  *
  * Read {@link https://www.npmjs.com/package/rxjs-poll|docs} for more info.
  *
@@ -26,54 +29,53 @@ import { Nil } from './common/utils';
  *   .subscribe();
  * ```
  *
- * @param config - {@link PollConfig} object used for polling configuration
+ * @param config - {@link PollConfig} object used for configuration
  *
- * @return A function that returns an Observable that will resubscribe to the source on \
- * complete or error
+ * @return Function that returns an Observable handling resubscription \
+ * to the source on complete or error
  */
 export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<T> {
   return (source$) => {
-    const { type, retries, isBackgroundMode, isConsecutiveRule, getDelay } = normalizeConfig(config);
-    const retryKey: RetryKey = isConsecutiveRule ? 'consecutiveRetries' : 'retries';
+    const { type, retry, pauseWhenHidden, getDelayTime, getRetryTime } = extendConfig(config);
+    const retryKey: RetryKey = retry.consecutiveOnly ? 'consecutiveRetryCount' : 'retryCount';
     const state: PollState<T> = {
-      polls: 0,
-      retries: 0,
-      consecutiveRetries: 0,
-
-      value: null as any,
-      error: null,
+      pollCount: 0,
+      retryCount: 0,
+      consecutiveRetryCount: 0,
+      value: undefined,
+      error: undefined,
     };
 
-    const nextPollDelay = (value: T): number => {
-      state.polls += 1;
+    const nextDelayTime = (value: T): number => {
+      state.pollCount += 1;
       state.value = value;
 
-      return getDelay(state);
+      return getDelayTime(state);
     };
 
-    const visibility$ = isBackgroundMode ? of(true) : visibilityState$;
-    const poller$ = getPoller$(type, source$, nextPollDelay);
+    const nextRetryTime = (error: any): number => {
+      state.error = error;
+
+      return getRetryTime(state);
+    };
+
+    const resetError = (): void => {
+      state.error = null;
+      state.consecutiveRetryCount = 0;
+    };
+
+    const isRetryLimit = (): boolean => {
+      state.retryCount += 1;
+      state.consecutiveRetryCount += 1;
+
+      return state[retryKey] > retry.limit;
+    };
+
+    const visibility$ = pauseWhenHidden ? visibilityState$ : of(true);
+    const poller$ = getPoller$(type, source$, nextDelayTime);
 
     return visibility$.pipe(
-      switchMap((isVisible) =>
-        isVisible
-          ? poller$.pipe(
-              retry({
-                delay(error) {
-                  state.error = error;
-                  state.retries += 1;
-                  state.consecutiveRetries += 1;
-
-                  return state[retryKey] > retries ? throwError(() => error) : timer(getDelay(state));
-                },
-              }),
-              tap(() => {
-                state.error = null;
-                state.consecutiveRetries = 0;
-              })
-            )
-          : EMPTY
-      )
+      switchMap((isVisible) => (isVisible ? poller$.pipe(retryPoll(isRetryLimit, nextRetryTime, resetError)) : EMPTY))
     );
   };
 }

@@ -1,66 +1,49 @@
-import { isFunction, Nil, normalizeNumber, sampleNumber, UnsafeMinMax } from './utils';
+import { controlConfig } from '../constants/config.const';
+import { ExtendedPollConfig, NormalizedPollConfig, PollConfig } from '../types/config.type';
+import { PollMode, PollTimeProducer } from '../types/poll.type';
+import { Nil } from '../types/utils.type';
+import { getStrategyTimeProducer } from './strategies';
+import { isFunction, normalizeNumber, pickNumber } from './utils';
 
-export function normalizeConfig<T>(config?: PollConfig<T> | Nil): NormalizedPollConfig<T> {
+export function extendConfig<T>(config?: PollConfig<T> | Nil): ExtendedPollConfig<T> {
+  const normalizedConfig: NormalizedPollConfig<T> = normalizeConfig(config);
+
+  return {
+    ...normalizedConfig,
+    getDelayTime: getTimeProducer('delay', normalizedConfig),
+    getRetryTime: getTimeProducer('retry', normalizedConfig),
+  };
+}
+
+function getTimeProducer<T>(mode: PollMode, config: NormalizedPollConfig<T>): PollTimeProducer<T> {
+  const defaultTime = controlConfig[mode].time;
+  const timeProducer = getStrategyTimeProducer(mode, config);
+
+  return (state): number => {
+    const producedTime = timeProducer({ ...state });
+    const normalizedTime = normalizeNumber(producedTime, defaultTime);
+
+    return pickNumber(normalizedTime);
+  };
+}
+
+function normalizeConfig<T>(config: PollConfig<T> | Nil): NormalizedPollConfig<T> {
   return {
     type: config?.type ?? controlConfig.type,
-    getDelay: isFunction(config?.delay) ? delayProducer(config.delay) : defaultProducer(config?.delay),
-    retries: normalizeNumber(config?.retries, controlConfig.retries, false),
-    isConsecutiveRule: config?.isConsecutiveRule ?? true,
-    isBackgroundMode: Boolean(config?.isBackgroundMode),
+    delay: {
+      strategy: config?.delay?.strategy ?? controlConfig.delay.strategy,
+      time: isFunction(config?.delay?.time)
+        ? config.delay.time
+        : normalizeNumber(config?.delay?.time, controlConfig.delay.time),
+    },
+    retry: {
+      strategy: config?.retry?.strategy ?? controlConfig.retry.strategy,
+      time: isFunction(config?.retry?.time)
+        ? config.retry.time
+        : normalizeNumber(config?.retry?.time, controlConfig.retry.time),
+      limit: normalizeNumber(config?.retry?.limit, controlConfig.retry.limit, false),
+      consecutiveOnly: config?.retry?.consecutiveOnly ?? controlConfig.retry.consecutiveOnly,
+    },
+    pauseWhenHidden: config?.pauseWhenHidden ?? controlConfig.pauseWhenHidden,
   };
 }
-
-function delayProducer<T>(delayFunc: PollDelayFunc<T>): DelayProducer<T> {
-  return (state): number => {
-    const delay = delayFunc(Object.assign({}, state));
-    const normalizedDelay = normalizeNumber(delay, controlConfig.delay);
-
-    return sampleNumber(normalizedDelay);
-  };
-}
-
-function defaultProducer<T>(delay: number | UnsafeMinMax | Nil): DelayProducer<T> {
-  const normalizedDelay = normalizeNumber(delay, controlConfig.delay);
-
-  return (): number => sampleNumber(normalizedDelay);
-}
-
-export const controlConfig: ControlPollConfig<any> = {
-  type: 'repeat',
-  delay: 1000,
-  retries: 3,
-  isConsecutiveRule: true,
-  isBackgroundMode: false,
-} as const;
-
-export type ControlPollConfig<T> = {
-  delay: number;
-} & Omit<NormalizedPollConfig<T>, 'getDelay'>;
-
-export type NormalizedPollConfig<T> = {
-  type: PollType;
-  getDelay: DelayProducer<T>;
-  retries: number;
-  isConsecutiveRule: boolean;
-  isBackgroundMode: boolean;
-};
-
-export type PollConfig<T> = {
-  type?: PollType | Nil;
-  delay?: number | UnsafeMinMax | PollDelayFunc<T> | Nil;
-  retries?: number | Nil;
-  isConsecutiveRule?: boolean | Nil;
-  isBackgroundMode?: boolean | Nil;
-};
-
-export type PollType = 'repeat' | 'interval';
-export type PollDelayFunc<T> = (state: PollState<T>) => number | UnsafeMinMax | Nil;
-type DelayProducer<T> = (state: PollState<T>) => number;
-
-export type PollState<T> = {
-  polls: number;
-  value: T;
-  error: any | null;
-} & Record<RetryKey, number>;
-
-export type RetryKey = 'retries' | 'consecutiveRetries';

@@ -36,7 +36,7 @@
     "test:coverage": "npm run util:clean:coverage && npm run test -- --collect-coverage",
     "lint": "eslint ./src ./tests",
     "lint:fix": "npm run lint -- --fix",
-    "util:packageJson": "cross-env TS_NODE_PROJECT='./ts-configs/tsconfig.scripts.json' ts-node ./scripts/generate-package-json.ts",
+    "util:packageJson": "cross-env TS_NODE_PROJECT='./ts-configs/tsconfig.scripts.json' ts-node ./utils/generate-package-json.ts",
     "util:clean:dist": "rimraf ./dist --no-preserve-root --no-interactive",
     "util:clean:coverage": "rimraf ./coverage --no-preserve-root --no-interactive",
     "util:commitlint": "commitlint",
