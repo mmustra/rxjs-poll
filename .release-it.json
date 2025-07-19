@@ -14,15 +14,7 @@
   },
   "hooks": {
     "before:init": ["git pull origin v1", "npm run lint", "npm run test"],
-    "after:github:release": [
-      "echo 'Testing gh release list command:'",
-      "gh release list --limit 30 --exclude-pre-releases --json tagName --jq -r '.[].tagName'",
-      "echo 'After sorting:'",
-      "gh release list --limit 30 --exclude-pre-releases --json tagName --jq -r '.[].tagName' | sort -V",
-      "echo 'Highest version:'",
-      "gh release list --limit 30 --exclude-pre-releases --json tagName --jq -r '.[].tagName' | sort -V | tail -1",
-      "bash scripts/gh-latest-release-tag.sh ${version}"
-    ]
+    "after:github:release": "bash scripts/gh-latest-release-tag.sh ${version}"
   },
   "plugins": {
     "@release-it/conventional-changelog": {

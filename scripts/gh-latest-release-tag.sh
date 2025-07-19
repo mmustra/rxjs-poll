@@ -1,7 +1,7 @@
 #!/bin/bash
 VERSION=$1
 
-if ! ACTUAL_LATEST=$(gh release list --limit 30 --exclude-pre-releases --json tagName --jq -r '.[].tagName' | sort -V | tail -1); then
+if ! ACTUAL_LATEST=$(gh release list --limit 30 --exclude-pre-releases --json tagName | jq -r '.[].tagName' | sort -V | tail -1); then
   echo "Failed to fetch releases"
   exit 1
 fi
