@@ -1,7 +1,7 @@
 # RxJS Polling Operator
 
 <a href="https://www.npmjs.com/package/rxjs-poll" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Version" src="https://img.shields.io/npm/v/rxjs-poll"></a>
-<a href="https://bundlephobia.com/package/rxjs-poll@latest" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Bundle Size" src="https://img.shields.io/bundlephobia/minzip/rxjs-poll?label=gzip"></a>
+<a href="https://bundlephobia.com/package/rxjs-poll@latest" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Bundle Size" src="https://img.shields.io/bundlephobia/minzip/rxjs-poll/latest?label=gzip"></a>
 <a href="https://github.com/mmustra/rxjs-poll/tree/main/tests" target="_blank" rel="noopener noreferrer nofollow"><img alt="Codecov" src="https://img.shields.io/codecov/c/gh/mmustra/rxjs-poll?token=H9R97BLFQI"></a>
 <a href="https://github.com/mmustra/rxjs-poll/issues" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/mmustra/rxjs-poll"></a>
 <a href="https://github.com/mmustra/rxjs-poll/commits/main" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/mmustra/rxjs-poll/main?label=activity"></a>
