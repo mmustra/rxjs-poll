@@ -8,3 +8,18 @@ updates:
       prefix: 'fix'
       prefix-development: 'chore'
       include: 'scope'
+  - package-ecosystem: 'npm'
+    directory: '/'
+    target-branch: 'v1'
+    schedule:
+      interval: 'weekly'
+    commit-message:
+      prefix: 'fix'
+      prefix-development: 'chore'
+      include: 'scope'
+    # Only security updates for v1 branch
+    allow:
+      - dependency-type: 'direct'
+        update-type: 'security'
+      - dependency-type: 'indirect'
+        update-type: 'security'
