@@ -1,10 +1,10 @@
 # RxJS Polling Operator
 
-<a href="https://www.npmjs.com/package/rxjs-poll" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Version" src="https://img.shields.io/npm/v/rxjs-poll"></a>
-<a href="https://bundlephobia.com/package/rxjs-poll@latest" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Bundle Size" src="https://img.shields.io/bundlephobia/minzip/rxjs-poll?label=gzip"></a>
-<a href="https://github.com/mmustra/rxjs-poll/tree/main/tests" target="_blank" rel="noopener noreferrer nofollow"><img alt="Codecov" src="https://img.shields.io/codecov/c/gh/mmustra/rxjs-poll?token=H9R97BLFQI"></a>
-<a href="https://github.com/mmustra/rxjs-poll/issues" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/mmustra/rxjs-poll"></a>
-<a href="https://github.com/mmustra/rxjs-poll/commits/main" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/mmustra/rxjs-poll/main?label=activity"></a>
+<a href="https://www.npmjs.com/package/rxjs-poll/v/v1-lts" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Version" src="https://img.shields.io/npm/v/rxjs-poll/v1-lts?label=npm@v1"></a>
+<a href="https://bundlephobia.com/package/rxjs-poll@1" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Bundle Size" src="https://img.shields.io/bundlephobia/minzip/rxjs-poll/1?label=gzip@v1"></a>
+<a href="https://github.com/mmustra/rxjs-poll/tree/v1/tests" target="_blank" rel="noopener noreferrer nofollow"><img alt="Codecov" src="https://img.shields.io/codecov/c/gh/mmustra/rxjs-poll/v1?label=coverage@v1&token=H9R97BLFQI"></a>
+<a href="https://github.com/mmustra/rxjs-poll/issues?q=is%3Aissue%20state%3Aopen%20label%3Av1" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/mmustra/rxjs-poll/v1?label=issues@v1"></a>
+<a href="https://github.com/mmustra/rxjs-poll/commits/v1" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/mmustra/rxjs-poll/v1?label=activity@v1"></a>
 
 A flexible RxJS operator library that enables polling on any completed observable source with advanced configuration options.
 
