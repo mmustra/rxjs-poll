@@ -13,7 +13,8 @@
     "publishArgs": ["--access public", "--provenance", "--tag v1-lts"]
   },
   "hooks": {
-    "before:init": ["git pull origin v1", "npm run lint", "npm run test"]
+    "before:init": ["git pull origin v1", "npm run lint", "npm run test"],
+    "after:github:release": "gh release edit ${version} --latest=false"
   },
   "plugins": {
     "@release-it/conventional-changelog": {
