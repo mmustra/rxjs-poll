@@ -14,7 +14,7 @@
   },
   "hooks": {
     "before:init": ["git pull origin v1", "npm run lint", "npm run test"],
-    "after:release": "gh release edit ${version} --latest=false"
+    "after:github:release": "bash scripts/gh-latest-release-tag.sh ${version}"
   },
   "plugins": {
     "@release-it/conventional-changelog": {
