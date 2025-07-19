@@ -14,7 +14,14 @@
   },
   "hooks": {
     "before:init": ["git pull origin v1", "npm run lint", "npm run test"],
-    "after:github:release": "bash scripts/gh-latest-release-tag.sh ${version}"
+    "after:github:release": [
+      "echo 'Hook started'",
+      "pwd",
+      "ls -la scripts/",
+      "cat scripts/gh-latest-release-tag.sh",
+      "bash scripts/gh-latest-release-tag.sh ${version}",
+      "echo 'Hook completed'"
+    ]
   },
   "plugins": {
     "@release-it/conventional-changelog": {
