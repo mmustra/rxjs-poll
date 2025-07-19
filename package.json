@@ -1,6 +1,6 @@
 {
   "name": "rxjs-poll",
-  "version": "1.1.9",
+  "version": "1.1.10",
   "description": "RxJS operator for polling",
   "keywords": [
     "rxjs",
