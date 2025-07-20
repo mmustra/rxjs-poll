@@ -3,8 +3,8 @@
 <a href="https://www.npmjs.com/package/rxjs-poll" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Version" src="https://img.shields.io/npm/v/rxjs-poll"></a>
 <a href="https://bundlephobia.com/package/rxjs-poll@latest" target="_blank" rel="noopener noreferrer nofollow"><img alt="NPM Bundle Size" src="https://img.shields.io/bundlephobia/minzip/rxjs-poll/latest?label=gzip"></a>
 <a href="https://github.com/mmustra/rxjs-poll/tree/main/tests" target="_blank" rel="noopener noreferrer nofollow"><img alt="Codecov" src="https://img.shields.io/codecov/c/gh/mmustra/rxjs-poll?token=H9R97BLFQI"></a>
-<a href="https://github.com/mmustra/rxjs-poll/issues" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub Issues or Pull Requests" src="https://img.shields.io/github/issues/mmustra/rxjs-poll"></a>
-<a href="https://github.com/mmustra/rxjs-poll/commits/main" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/mmustra/rxjs-poll/main?label=activity"></a>
+<a href="https://github.com/mmustra/rxjs-poll/issues?q=is%3Aissue%20state%3Aopen%20label%3Alatest" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub Issues" src="https://img.shields.io/github/issues/mmustra/rxjs-poll/latest?label=issues"></a>
+<a href="https://github.com/mmustra/rxjs-poll/commits/main" target="_blank" rel="noopener noreferrer nofollow"><img alt="GitHub Latest Commits" src="https://img.shields.io/github/last-commit/mmustra/rxjs-poll/main?label=activity"></a>
 
 A flexible RxJS operator library that enables polling on any completed observable source with advanced timing and retry strategies.
 
@@ -137,7 +137,7 @@ interface PollConfig {
   delay?: {
     /**
      * Strategy mode for delay timing. Built-in strategies (except dynamic)
-     * calculate time per state's 'pollCount'.
+     * calculate time per state's `pollCount`.
      * @default 'constant'
      */
     strategy: 'constant' | 'random' | 'dynamic';
@@ -162,8 +162,8 @@ interface PollConfig {
     /**
      * Strategy mode for retry timing. Built-in strategies (except dynamic)
      * calculate time per state:
-     * - consecutiveOnly: true → uses 'consecutiveRetryCount'
-     * - consecutiveOnly: false → uses 'retryCount'
+     * - consecutiveOnly: true → uses `consecutiveRetryCount`
+     * - consecutiveOnly: false → uses `retryCount`
      * @default 'exponential'
      */
     mode: 'constant' | 'linear' | 'exponential' | 'random' | 'dynamic';
@@ -183,8 +183,8 @@ interface PollConfig {
       | (state: PollState) => number | [min: number, max: number];
 
     /**
-     * Maximum number of retry attempts before throwing an error
-     * Use Infinity to keep retrying indefinitely
+     * Maximum number of retry attempts before throwing an error.
+     * Use `Infinity` to keep retrying indefinitely.
      * @default 3
      */
     limit?: number;
@@ -225,7 +225,7 @@ interface PollState<T> {
   /** Current number of consecutive retry attempts */
   consecutiveRetryCount: number;
 
-  /** Latest value from the source. For 'interval' polling mode,
+  /** Latest value from the source. For `interval` polling mode,
    * first emission is undefined. */
   value: T | undefined;
 
@@ -238,9 +238,11 @@ interface PollState<T> {
 
 ## 🚨 Breaking Changes
 
-**Version 2** introduces an API focused on strategy-based configuration. The new architecture separates concerns between normal polling behavior and error handling scenarios, with type safety and clear configuration intent. This makes it easier to choose timings from common patterns.
+**Version 2** ([source](https://github.com/mmustra/rxjs-poll)) introduces an API focused on strategy-based configuration. The new architecture separates concerns between normal polling behavior and error handling scenarios, with type safety and clear configuration intent. This makes it easier to choose timings from common patterns.
 
-### Changes
+**Version 1** ([source](https://github.com/mmustra/rxjs-poll/tree/v1)) will continue to receive bug fixes and security updates.
+
+### Changes in v2
 
 #### PollConfig
 
@@ -312,7 +314,7 @@ poll({
 
 ```typescript
 poll({
-  /** 'error' used as a flag to determine delay/retry timing */
+  /** `error` used as a flag to determine delay/retry timing */
   delay: ({ error, consecutiveRetries }) =>
     error ? consecutiveRetries * 1000 : 2000,
 });
