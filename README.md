@@ -46,7 +46,7 @@ import { takeWhile } from 'rxjs';
 request$
   .pipe(
     poll(), // Poll every second with exponential retry strategy (7s max)
-    takeWhile(({ length }) => length < 200, true)
+    takeWhile(({ status }) => status !== 'done', true)
   )
   .subscribe({ next: console.log });
 ```
@@ -73,7 +73,7 @@ request$
         limit: Infinity, // Will never throw
       },
     }),
-    takeWhile(({ length }) => length < 200, true)
+    takeWhile(({ status }) => status !== 'done', true)
   )
   .subscribe({ next: console.log });
 ```
@@ -94,7 +94,7 @@ request$
       delay: {
         /** Adaptive polling based on response data */
         strategy: 'dynamic',
-        time: ({ value }) => (value?.length < 100 ? 500 : 1000),
+        time: ({ value }) => (value?.items.length ? 1000 : 500),
       },
       retry: {
         /** Custom exponential backoff with jitter */
@@ -108,7 +108,7 @@ request$
         limit: 6,
       },
     }),
-    takeWhile(({ length }) => length < 200, true)
+    takeWhile(({ status }) => status !== 'done', true)
   )
   .subscribe({ next: console.log });
 ```
