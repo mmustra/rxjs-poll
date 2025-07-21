@@ -60,7 +60,7 @@ export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<
     };
 
     const resetError = (): void => {
-      state.error = null;
+      state.error = undefined;
       state.consecutiveRetryCount = 0;
     };
 
