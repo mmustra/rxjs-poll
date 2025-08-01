@@ -15,20 +15,16 @@ export function getPoller$<T>(type: PollType, source$: Observable<T>, getTime: (
   );
 
   return type === 'repeat'
-    ? completed$.pipe(
-        repeat({
-          delay: () => timer(getTime(lastValue)),
-        })
-      )
-    : dynamicInterval$(() => getTime(lastValue)).pipe(switchMap(() => completed$));
+    ? repeatWith$(completed$, () => getTime(lastValue))
+    : repeatWith$(of(null), () => getTime(lastValue)).pipe(switchMap(() => completed$));
 }
 
 function pageVisibility$(): Observable<boolean> {
   return isBrowser() ? fromEvent(document, 'visibilitychange').pipe(startWith(null), map(isDocumentVisible)) : of(true);
 }
 
-function dynamicInterval$(getTime: () => number): Observable<null> {
-  return of(null).pipe(
+function repeatWith$<T>(source$: Observable<T>, getTime: () => number): Observable<T> {
+  return source$.pipe(
     repeat({
       delay: () => timer(getTime()),
     })
