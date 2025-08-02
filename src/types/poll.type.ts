@@ -1,17 +1,52 @@
 import { pollMode, pollType } from '../constants/poll.const';
 
+/**
+ * Defines the polling behavior mode
+ * - "delay": Delay mode
+ * - "retry": Retry mode
+ */
 export type PollMode = (typeof pollMode)[keyof typeof pollMode];
 
+/**
+ * Defines the polling behavior type
+ * - "repeat": Polls after current source completes
+ * - "interval": Polls in intervals, dropping any ongoing source operations
+ */
 export type PollType = (typeof pollType)[keyof typeof pollType];
 
+/**
+ * Current polling state information available to timing functions
+ */
 export type PollState<T> = {
-  pollCount: number;
+  /** Latest value from the source. For "interval" polling mode, first emission is undefined. */
   value: T | undefined;
+  /** Latest error when retrying */
   error: any | undefined;
+  /** Total number of successful poll operations */
+  pollCount: number;
+  /**
+   * Properties for counting retries
+   * - "retryCount": Total number of retry attempts
+   * - "consecutiveRetryCount": Current number of consecutive retry attempts
+   */
 } & Record<RetryKey, number>;
 
+/**
+ * Keys for retry counting in PollState
+ * - "retryCount": Total number of retry attempts
+ * - "consecutiveRetryCount": Current number of consecutive retry attempts
+ */
 export type RetryKey = 'retryCount' | 'consecutiveRetryCount';
 
+/**
+ * All possible keys in the PollState object
+ */
 export type PollStateKeys = keyof PollState<unknown>;
 
+/**
+ * Function that produces time values based on poll state
+ * Used for dynamic timing strategies in delay and retry configurations
+ * @param state - Current poll state containing counts, value, and error information
+ * @returns Time in milliseconds for the next delay/retry
+ */
 export type PollTimeProducer<T> = (state: PollState<T>) => number;

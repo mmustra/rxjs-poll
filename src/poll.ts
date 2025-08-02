@@ -39,11 +39,11 @@ export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<
     const { type, retry, pauseWhenHidden, getDelayTime, getRetryTime } = extendConfig(config);
     const retryKey: RetryKey = retry.consecutiveOnly ? 'consecutiveRetryCount' : 'retryCount';
     const state: PollState<T> = {
+      value: undefined,
+      error: undefined,
       pollCount: 0,
       retryCount: 0,
       consecutiveRetryCount: 0,
-      value: undefined,
-      error: undefined,
     };
 
     const nextDelayTime = (value: T): number => {
