@@ -136,7 +136,7 @@ interface PollConfig {
    */
   delay?: {
     /**
-     * Strategy mode for delay timing. Built-in strategies (except dynamic)
+     * Strategy type for delay timing. Built-in strategies (except dynamic)
      * calculate time per state's `pollCount`.
      * @default 'constant'
      */
@@ -160,13 +160,13 @@ interface PollConfig {
    */
   retry?: {
     /**
-     * Strategy mode for retry timing. Built-in strategies (except dynamic)
+     * Strategy type for retry timing. Built-in strategies (except dynamic)
      * calculate time per state:
      * - consecutiveOnly: true → uses `consecutiveRetryCount`
      * - consecutiveOnly: false → uses `retryCount`
      * @default 'exponential'
      */
-    mode: 'constant' | 'linear' | 'exponential' | 'random' | 'dynamic';
+    strategy: 'constant' | 'linear' | 'exponential' | 'random' | 'dynamic';
 
     /**
      * Time (ms) depending on strategy:
@@ -216,6 +216,13 @@ State object passed to delay/retry time producer functions:
 
 ```typescript
 interface PollState<T> {
+  /** Latest value from the source. For `interval` polling mode,
+   * first emission is undefined. */
+  value: T | undefined;
+
+  /** Latest error when retrying */
+  error: any | undefined;
+
   /** Total number of successful poll operations */
   pollCount: number;
 
@@ -224,13 +231,6 @@ interface PollState<T> {
 
   /** Current number of consecutive retry attempts */
   consecutiveRetryCount: number;
-
-  /** Latest value from the source. For `interval` polling mode,
-   * first emission is undefined. */
-  value: T | undefined;
-
-  /** Latest error when retrying */
-  error: any | undefined;
 }
 
 /** Note: pollCount + retryCount = total attempts */
