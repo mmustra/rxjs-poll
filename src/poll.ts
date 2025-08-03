@@ -1,7 +1,7 @@
 import { EMPTY, MonoTypeOperatorFunction, of, switchMap } from 'rxjs';
 
 import { extendConfig } from './common/config';
-import { getPoller$, visibilityState$ } from './common/observables';
+import { getPollerFactory$, visibilityState$ } from './common/observables';
 import { retryPoll } from './common/operators';
 import { PollConfig } from './types/config.type';
 import { PollState, RetryKey } from './types/poll.type';
@@ -12,8 +12,6 @@ import { Nil } from './types/utils.type';
  *
  * Automatically re-executes a source observable after completion, \
  * using delay strategies and retry mechanisms for handling errors.
- *
- * Read {@link https://www.npmjs.com/package/rxjs-poll|docs} for more info.
  *
  * #### Example
  *
@@ -72,7 +70,7 @@ export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<
     };
 
     const visibility$ = pauseWhenHidden ? visibilityState$ : of(true);
-    const poller$ = getPoller$(type, source$, nextDelayTime);
+    const poller$ = getPollerFactory$(type, source$)(nextDelayTime);
 
     return visibility$.pipe(
       switchMap((isVisible) => (isVisible ? poller$.pipe(retryPoll(isRetryLimit, nextRetryTime, resetError)) : EMPTY))

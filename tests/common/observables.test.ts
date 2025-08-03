@@ -1,7 +1,7 @@
 import { EMPTY, of, switchMap, take, timer } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
-import { getPoller$, visibilityState$ } from '../../src/common/observables';
+import { getPollerFactory$, visibilityState$ } from '../../src/common/observables';
 import { setPageActive } from '../../utils/test-helpers';
 
 let testScheduler: TestScheduler;
@@ -20,7 +20,7 @@ describe('getPoller$', () => {
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('--a|', { a: 'value' });
-      const result$ = getPoller$('repeat', source$, getTime).pipe(take(3));
+      const result$ = getPollerFactory$('repeat', source$)(getTime).pipe(take(3));
       const expected = '---a 9ms ---a 9ms ---(a|)';
       expectObservable(result$).toBe(expected, { a: 'value' });
     });
@@ -33,7 +33,7 @@ describe('getPoller$', () => {
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('--a|', { a: 'value' });
-      const result$ = getPoller$('interval', source$, getTime).pipe(take(2));
+      const result$ = getPollerFactory$('interval', source$)(getTime).pipe(take(2));
 
       const expected = '---a 6ms ---(a|)';
       expectObservable(result$).toBe(expected, { a: 'value' });
@@ -58,7 +58,7 @@ describe('getPoller$', () => {
       };
 
       const source$ = cold('a|', { a: 'trigger' }).pipe(switchMap(() => createSource()));
-      const result$ = getPoller$('interval', source$, getTime).pipe(take(2));
+      const result$ = getPollerFactory$('interval', source$)(getTime).pipe(take(2));
       const expected = '6ms a 19ms (b|)';
 
       expectObservable(result$).toBe(expected, { a: 'initial', b: 'success' });
