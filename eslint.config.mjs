@@ -8,6 +8,7 @@ import jestFormatting from 'eslint-plugin-jest-formatting';
 import xo from 'eslint-config-xo';
 import xoTypescript from 'eslint-config-xo-typescript/space';
 import prettierConfig from 'eslint-config-prettier';
+import { resolve } from 'path';
 
 export default [
   {
@@ -20,7 +21,7 @@ export default [
       sourceType: 'module',
       parser: tsparser,
       parserOptions: {
-        tsconfigRootDir: './ts-configs/eslint',
+        tsconfigRootDir: resolve('./ts-configs/eslint'),
         project: 'tsconfig.json',
       },
       globals: {
