@@ -17,9 +17,5 @@ updates:
       prefix: 'fix'
       prefix-development: 'chore'
       include: 'scope'
-    # Only security updates for v1 branch
-    allow:
-      - dependency-type: 'direct'
-        update-type: 'security'
-      - dependency-type: 'indirect'
-        update-type: 'security'
+    # v1 branch: Disable version updates, only security updates via Dependabot rules
+    open-pull-requests-limit: 0
