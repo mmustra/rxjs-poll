@@ -1,7 +1,7 @@
 {
   "name": "rxjs-poll",
   "version": "2.0.8",
-  "description": "RxJS operator for polling",
+  "description": "A flexible RxJS operator library that enables polling on any completed observable source with advanced timing and retry strategies",
   "keywords": [
     "rxjs",
     "operator",
@@ -10,8 +10,19 @@
     "long-polling",
     "network",
     "http",
-    "ajax"
+    "ajax",
+    "observable",
+    "reactive",
+    "typescript",
+    "retry",
+    "backoff",
+    "exponential-backoff",
+    "interval",
+    "repeat",
+    "strategy",
+    "timing"
   ],
+  "homepage": "https://github.com/mmustra/rxjs-poll#readme",
   "author": {
     "name": "Marin Muštra",
     "url": "https://www.linkedin.com/in/marin-mustra"
