@@ -10,14 +10,14 @@ A flexible RxJS operator library that enables polling on any completed observabl
 
 ## 🚀 Features
 
-- **Two polling modes**: `repeat` and `interval` to suit different use cases
+- **Two polling types**: `repeat` and `interval` to suit different use cases
 - **Timing strategies**: `constant`, `linear`, `exponential`, `random` and `dynamic` (custom logic)
 - **Auto-pause**: Automatically pause/resume polling based on page visibility (browser only)
 - **Flexible retries**: Control retry attempts with consecutive or total counting modes
 - **Input validation**: Guards against unexpected input time values
 - **Cross-platform**: Works in both browser and Node.js environments
 - **Modern compatibility**: Compatible with RxJS v7+
-- **Multiple module formats**: Supports CommonJS (CJS) and ES Modules (ESM)
+- **Multiple module formats**: Supports CJS, ESM, and UMD
 
 ## 📦 Installation
 
@@ -156,7 +156,14 @@ interface PollConfig {
   };
 
   /**
-   * Configuration for retry behavior (on errors)
+   * Configuration for retry behavior (on errors).
+   * Can be fully specified with strategy/time, or partially specified with just limit/consecutiveOnly.
+   * If omitted entirely, uses default exponential retry strategy.
+   *
+   * **Configuration options:**
+   * - Full config: `{ strategy: '...', time: ..., limit?: ..., consecutiveOnly?: ... }`
+   * - Partial config: `{ limit: ..., consecutiveOnly?: ... }` (uses default strategy/time)
+   * - Omit entirely: Uses all defaults
    */
   retry?: {
     /**
@@ -165,6 +172,7 @@ interface PollConfig {
      * - consecutiveOnly: true → uses `consecutiveRetryCount`
      * - consecutiveOnly: false → uses `retryCount`
      * @default 'exponential'
+     * @note Required if `time` is provided, otherwise omitted to use defaults
      */
     strategy: 'constant' | 'linear' | 'exponential' | 'random' | 'dynamic';
 
@@ -176,6 +184,7 @@ interface PollConfig {
      * - random: [min, max]
      * - dynamic: (state) => number | [min, max]
      * @default 1000
+     * @note Required if `strategy` is provided, otherwise omitted to use defaults
      */
     time:
       | number
@@ -216,7 +225,7 @@ State object passed to delay/retry time producer functions:
 
 ```typescript
 interface PollState<T> {
-  /** Latest value from the source. For `interval` polling mode,
+  /** Latest value from the source. For `interval` polling type,
    * first emission is undefined. */
   value: T | undefined;
 
@@ -238,117 +247,9 @@ interface PollState<T> {
 
 ## 🚨 Breaking Changes
 
-**Version 2** ([source](https://github.com/mmustra/rxjs-poll)) introduces an API focused on strategy-based configuration. The new architecture separates concerns between normal polling behavior and error handling scenarios, with type safety and clear configuration intent. This makes it easier to choose timings from common patterns.
+**Version 2** ([source](https://github.com/mmustra/rxjs-poll)) introduces an API focused on strategy-based configuration with improved type safety and clearer separation between polling delays and retry behavior. See [V2_CHANGES.md](docs/V2_CHANGES.md) for detailed migration guide and examples.
 
 **Version 1** ([source](https://github.com/mmustra/rxjs-poll/tree/v1)) will continue to receive bug fixes and security updates.
-
-### Changes in v2
-
-#### PollConfig
-
-- **delay/retry**: Added configuration objects for polling and retry
-- **retries**: Renamed and moved to `retry.limit`
-- **isConsecutiveRule**: Renamed and moved to `retry.consecutiveOnly`
-- **isBackgroundMode**: Renamed to `pauseWhenHidden` and default behavior inverted (`false` → `true`)
-
-#### PollState
-
-- **polls**: Renamed to `pollCount`
-- **retries**: Renamed to `retryCount`
-- **consecutiveRetries**: Renamed to `consecutiveRetryCount`
-- **value**: Changed to type `T | undefined`
-- **error**: Changed to type `any | undefined`
-
-### Migration Examples
-
-### Basic
-
-**Before (v1.x)**
-
-```typescript
-poll({
-  type: 'interval',
-  delay: 2000, // Same timing for delay and retry
-  retries: 5,
-  isConsecutiveRule: false,
-});
-```
-
-**After (v2.x)**
-
-```typescript
-poll({
-  type: 'interval',
-  delay: {
-    strategy: 'constant',
-    time: 2000,
-  },
-  retry: {
-    strategy: 'constant',
-    time: 2000,
-    limit: 5,
-    consecutiveOnly: false,
-  },
-});
-```
-
-or if you only care about delay timing:
-
-```typescript
-poll({
-  type: 'interval',
-  delay: {
-    strategy: 'constant',
-    time: 2000,
-  },
-  retry: {
-    limit: 5,
-    consecutiveOnly: false,
-  },
-});
-```
-
-### Dynamic
-
-**Before (v1.x)**
-
-```typescript
-poll({
-  /** `error` used as a flag to determine delay/retry timing */
-  delay: ({ error, consecutiveRetries }) =>
-    error ? consecutiveRetries * 1000 : 2000,
-});
-```
-
-**After (v2.x)**
-
-```typescript
-poll({
-  delay: {
-    strategy: 'constant',
-    time: 2000,
-  },
-  retry: {
-    strategy: 'dynamic',
-    time: ({ consecutiveRetryCount }) => consecutiveRetryCount * 1000,
-  },
-});
-```
-
-or with built-in strategy:
-
-```typescript
-poll({
-  delay: {
-    strategy: 'constant',
-    time: 2000,
-  },
-  retry: {
-    strategy: 'linear',
-    time: 1000,
-  },
-});
-```
 
 ## 🙌 Credits
 
