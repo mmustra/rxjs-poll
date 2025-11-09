@@ -132,6 +132,7 @@ describe('isFunction', () => {
     expect(isFunction(function () {})).toBe(true);
     expect(isFunction(async () => {})).toBe(true);
     expect(isFunction(Math.random)).toBe(true);
+    // eslint-disable-next-line no-console
     expect(isFunction(console.log)).toBe(true);
   });
 

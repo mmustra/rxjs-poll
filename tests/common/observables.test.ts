@@ -100,6 +100,7 @@ describe('visibilityState$', () => {
 
     const addEventListener = jest
       .spyOn(document, 'addEventListener')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .mockImplementation((eventType: string, listener: any) =>
         timer(4).subscribe(() => {
           setPageActive(true);

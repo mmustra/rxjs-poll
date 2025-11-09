@@ -51,6 +51,7 @@ export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<
       return getDelayTime(state);
     };
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const nextRetryTime = (error: any): number => {
       state.error = error;
 

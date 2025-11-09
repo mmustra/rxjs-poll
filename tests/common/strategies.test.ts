@@ -14,6 +14,7 @@ beforeEach(() => {
 });
 
 describe('getStrategyTimeProducer', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createMockState = (pollCount = 3, retryCount = 2, consecutiveRetryCount = 1): PollState<any> => ({
     pollCount,
     retryCount,
@@ -22,6 +23,7 @@ describe('getStrategyTimeProducer', () => {
     error: undefined,
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const createBaseConfig = (): NormalizedPollConfig<any> => ({
     type: pollType.INTERVAL,
     pauseWhenHidden: true,
@@ -187,6 +189,7 @@ describe('getStrategyTimeProducer', () => {
 
   describe('dynamic strategy', () => {
     it('should call dynamic function with state for delay mode', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const dynamicFn = jest.fn((state: PollState<any>) => state.pollCount * 150);
       const config = createBaseConfig();
       config.delay.time = dynamicFn;
@@ -202,6 +205,7 @@ describe('getStrategyTimeProducer', () => {
     });
 
     it('should call dynamic function with state for retry mode', () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const dynamicFn = jest.fn((state: PollState<any>) => state.retryCount * 250);
       const config = createBaseConfig();
       config.retry.time = dynamicFn;

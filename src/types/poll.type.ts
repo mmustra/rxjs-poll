@@ -21,6 +21,7 @@ export type PollState<T> = {
   /** Latest value from the source. For "interval" polling mode, first emission is undefined. */
   value: T | undefined;
   /** Latest error when retrying */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   error: any | undefined;
   /** Total number of successful poll operations */
   pollCount: number;
