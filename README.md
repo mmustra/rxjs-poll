@@ -160,8 +160,6 @@ interface PollConfig {
    * Configuration for retry behavior (on errors).
    * Can be fully specified with strategy/time, or partially specified with just limit/consecutiveOnly.
    * If omitted entirely, uses default exponential retry strategy.
-   *
-   * **Configuration options:**
    * - Full config: `{ strategy: '...', time: ..., limit?: ..., consecutiveOnly?: ... }`
    * - Partial config: `{ limit: ..., consecutiveOnly?: ... }` (uses default strategy/time)
    * - Omit entirely: Uses all defaults
