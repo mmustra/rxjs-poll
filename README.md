@@ -248,7 +248,7 @@ interface PollState<T> {
 
 ## 🚨 Breaking Changes
 
-**Version 2** ([source](https://github.com/mmustra/rxjs-poll)) introduces an API focused on strategy-based configuration with improved type safety and clearer separation between polling delays and retry behavior. See [V2_CHANGES.md](docs/V2_CHANGES.md) for detailed migration guide and examples.
+**Version 2** ([source](https://github.com/mmustra/rxjs-poll)) introduces an API focused on strategy-based configuration with improved type safety and clearer separation between polling delays and retry behavior. See [V2 Changes](docs/V2_CHANGES.md) for detailed migration guide and examples.
 
 **Version 1** ([source](https://github.com/mmustra/rxjs-poll/tree/v1)) will continue to receive bug fixes and security updates.
 
