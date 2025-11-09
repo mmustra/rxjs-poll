@@ -13,7 +13,19 @@ body:
     attributes:
       label: Describe the bug
       description: |
-        A clear and concise description of the behavior.
+        A clear and concise description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Go to '...'
+        2. Call '...'
+        3. See error
     validations:
       required: true
 
@@ -21,7 +33,15 @@ body:
     id: expected-behavior
     attributes:
       label: Expected behavior
-      description: A clear and concise description of what you expect to happen.
+      description: A clear and concise description of what you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: Actual behavior
+      description: A clear and concise description of what actually happened.
     validations:
       required: true
 
@@ -38,10 +58,15 @@ body:
       label: Reproduction URL
       description: Use [Stackblitz](https://stackblitz.com/fork/rxjs-mbx4c6) or a git repo to show a minimal reproduction of the issue. Please also paste the example code in the "Reproduction code" section above.
 
-  - type: input
+  - type: dropdown
     id: version
     attributes:
       label: Version
+      description: Which version of rxjs-poll are you using?
+      options:
+        - '2.x.x'
+        - '1.x.x'
+        - 'Not sure'
     validations:
       required: true
 
@@ -56,3 +81,13 @@ body:
     attributes:
       label: Additional context
       placeholder: Add any other context about the problem here.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I have searched existing issues to ensure this bug hasn't been reported
+          required: true
+        - label: I have tested with the latest version
+          required: false

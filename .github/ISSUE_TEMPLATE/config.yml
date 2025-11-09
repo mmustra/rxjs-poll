@@ -1,1 +1,8 @@
 blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability
+    url: https://github.com/mmustra/rxjs-poll/security/advisories/new
+    about: Please report security vulnerabilities privately using GitHub Security Advisories
+  - name: Question / Discussion
+    url: https://github.com/mmustra/rxjs-poll/discussions
+    about: Ask questions or start discussions in GitHub Discussions
