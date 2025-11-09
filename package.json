@@ -24,6 +24,9 @@
   "bugs": {
     "url": "https://github.com/mmustra/rxjs-poll/issues"
   },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "release": "release-it",
     "build": "npm run util:clean:dist && npm run build:rollup && npm run build:types",
