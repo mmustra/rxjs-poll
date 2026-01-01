@@ -141,11 +141,13 @@ interface PollConfig {
      * calculate time per state's `pollCount`.
      * @default 'constant'
      */
-    strategy: 'constant' | 'random' | 'dynamic';
+    strategy: 'constant' | 'linear' | 'exponential' | 'random' | 'dynamic';
 
     /**
      * Time (ms) depending on strategy:
      * - constant: number
+     * - linear: number
+     * - exponential: number
      * - random: [min, max]
      * - dynamic: (state) => number | [min, max]
      * @default 1000
