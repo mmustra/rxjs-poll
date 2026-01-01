@@ -27,6 +27,28 @@ describe('poll operator - delay strategies', () => {
     });
   });
 
+  it('should emit using linear strategy', () => {
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('-a-a|', { a: 'success' });
+      const expected = '----a----a-----a------a-------(a|)';
+
+      const result$ = source$.pipe(poll({ delay: { strategy: 'linear', time: 1 } }), take(5));
+
+      expectObservable(result$).toBe(expected, { a: 'success' });
+    });
+  });
+
+  it('should emit using exponential strategy', () => {
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('-a-a|', { a: 'success' });
+      const expected = '----a----a-----a-------a-----------(a|)';
+
+      const result$ = source$.pipe(poll({ delay: { strategy: 'exponential', time: 1 } }), take(5));
+
+      expectObservable(result$).toBe(expected, { a: 'success' });
+    });
+  });
+
   it('should emit using random strategy', () => {
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('-a-a|', { a: 'success' });

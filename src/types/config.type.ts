@@ -37,11 +37,15 @@ export type PollConfig<T> = {
  *
  * **Strategy:**
  * - "constant": Fixed timing
+ * - "linear": Linearly increasing timing
+ * - "exponential": Exponentially increasing timing
  * - "random": Random timing within a range
  * - "dynamic": Custom function-based timing
  *
  * **Time:**
  * - "constant": number
+ * - "linear": number
+ * - "exponential": number
  * - "random": [min, max]
  * - "dynamic": (state) => number | [min, max]
  *
@@ -51,7 +55,7 @@ export type PollConfig<T> = {
 export type PollDelayConfig<T> =
   | { time: DynamicFunction<T>; strategy: Extract<StrategyType, 'dynamic'> }
   | { time: MinMax; strategy: Extract<StrategyType, 'random'> }
-  | { time: number; strategy: Extract<StrategyType, 'constant'> };
+  | { time: number; strategy: Exclude<StrategyType, 'dynamic' | 'random'> };
 
 /**
  * Type-safe retry configuration with strategy-specific time constraints and optional settings.
@@ -79,11 +83,7 @@ export type PollDelayConfig<T> =
  * @default { strategy: "exponential", time: 1000, limit: 3, consecutiveOnly: true }
  */
 export type PollRetryConfig<T> =
-  | ((
-      | { time: DynamicFunction<T>; strategy: Extract<StrategyType, 'dynamic'> }
-      | { time: MinMax; strategy: Extract<StrategyType, 'random'> }
-      | { time: number; strategy: Exclude<StrategyType, 'dynamic' | 'random'> }
-    ) & { limit?: number; consecutiveOnly?: boolean })
+  | (PollDelayConfig<T> & { limit?: number; consecutiveOnly?: boolean })
   | { limit?: number; consecutiveOnly?: boolean; strategy?: never; time?: never };
 
 /**
