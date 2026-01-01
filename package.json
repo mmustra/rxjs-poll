@@ -1,6 +1,6 @@
 {
   "name": "rxjs-poll",
-  "version": "2.0.10",
+  "version": "2.1.0",
   "description": "A flexible RxJS operator library that enables polling on any completed observable source with advanced timing and retry strategies",
   "keywords": [
     "rxjs",
