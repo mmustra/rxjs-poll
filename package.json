@@ -1,6 +1,6 @@
 {
   "name": "rxjs-poll",
-  "version": "2.0.8",
+  "version": "2.0.10",
   "description": "A flexible RxJS operator library that enables polling on any completed observable source with advanced timing and retry strategies",
   "keywords": [
     "rxjs",
@@ -60,6 +60,8 @@
   },
   "main": "./dist/cjs/index.js",
   "module": "./dist/esm/index.js",
+  "jsdelivr": "./dist/umd/index.min.js",
+  "unpkg": "./dist/umd/index.min.js",
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "files": [
