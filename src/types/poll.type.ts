@@ -18,7 +18,7 @@ export type PollType = (typeof pollType)[keyof typeof pollType];
  * Current polling state information available to timing functions
  */
 export type PollState<T> = {
-  /** Latest value from the source. For "interval" polling mode, first emission is undefined. */
+  /** Latest value from the source. For "interval" polling type, first emission is undefined. */
   value: T | undefined;
   /** Latest error when retrying */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
