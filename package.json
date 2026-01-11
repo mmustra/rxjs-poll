@@ -36,7 +36,7 @@
     "url": "https://github.com/mmustra/rxjs-poll/issues"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "scripts": {
     "release": "release-it",
