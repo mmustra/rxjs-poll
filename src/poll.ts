@@ -1,10 +1,9 @@
-import { EMPTY, MonoTypeOperatorFunction, of, switchMap } from 'rxjs';
+import { MonoTypeOperatorFunction } from 'rxjs';
 
 import { extendConfig } from './common/config';
-import { getPollerFactory$, visibilityState$ } from './common/observables';
-import { retryPoll } from './common/operators';
+import { createState } from './common/state';
+import { getPollerFactory } from './observables/poller-factory';
 import { PollConfig } from './types/config.type';
-import { PollState, RetryKey } from './types/poll.type';
 import { Nil } from './types/utils.type';
 
 /**
@@ -28,53 +27,18 @@ import { Nil } from './types/utils.type';
  * ```
  *
  * @param config - {@link PollConfig} object used for configuration
- *
  * @return Function that returns an Observable handling resubscription \
  * to the source on complete or error
+ * @note First emission is guaranteed
  */
 export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<T> {
   return (source$) => {
-    const { type, retry, pauseWhenHidden, getDelayTime, getRetryTime } = extendConfig(config);
-    const retryKey: RetryKey = retry.consecutiveOnly ? 'consecutiveRetryCount' : 'retryCount';
-    const state: PollState<T> = {
-      value: undefined,
-      error: undefined,
-      pollCount: 0,
-      retryCount: 0,
-      consecutiveRetryCount: 0,
-    };
+    const extendedConfig = extendConfig(config);
+    const state = createState<T>();
 
-    const nextDelayTime = (value: T): number => {
-      state.pollCount += 1;
-      state.value = value;
+    const createPoller = getPollerFactory(source$, extendedConfig);
+    const poller$ = createPoller(state);
 
-      return getDelayTime(state);
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const nextRetryTime = (error: any): number => {
-      state.error = error;
-
-      return getRetryTime(state);
-    };
-
-    const resetError = (): void => {
-      state.error = undefined;
-      state.consecutiveRetryCount = 0;
-    };
-
-    const isRetryLimit = (): boolean => {
-      state.retryCount += 1;
-      state.consecutiveRetryCount += 1;
-
-      return state[retryKey] > retry.limit;
-    };
-
-    const visibility$ = pauseWhenHidden ? visibilityState$ : of(true);
-    const poller$ = getPollerFactory$(type, source$)(nextDelayTime);
-
-    return visibility$.pipe(
-      switchMap((isVisible) => (isVisible ? poller$.pipe(retryPoll(isRetryLimit, nextRetryTime, resetError)) : EMPTY))
-    );
+    return poller$;
   };
 }

@@ -1,9 +1,9 @@
-import { Observable, take } from 'rxjs';
+import { Observable, switchMap, take } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
 import { poll } from '../src/poll';
 import { PollState } from '../src/types/poll.type';
-import { setPageActive } from '../utils/test-helpers';
+import { setDocumentVisibility } from '../utils/test-helpers';
 
 let testScheduler: TestScheduler;
 
@@ -11,11 +11,11 @@ beforeEach(() => {
   testScheduler = new TestScheduler((actual, expected) => {
     expect(actual).toEqual(expected);
   });
-  setPageActive(true);
+  setDocumentVisibility(true);
   jest.clearAllMocks();
 });
 
-describe('poll operator - delay strategies', () => {
+describe('poll operator (repeat) - delay strategies', () => {
   it('should emit using constant strategy', () => {
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('-a-a|', { a: 'success' });
@@ -75,7 +75,7 @@ describe('poll operator - delay strategies', () => {
   });
 });
 
-describe('poll operator - retry strategies', () => {
+describe('poll operator (repeat) - retry strategies', () => {
   it('should retry using constant strategy', () => {
     testScheduler.run(({ cold, expectObservable }) => {
       const error = new Error('test error');
@@ -165,7 +165,7 @@ describe('poll operator - retry strategies', () => {
   });
 });
 
-describe('poll operator - extras', () => {
+describe('poll operator (repeat) - extras', () => {
   it('should not throw for scattered errors (consecutiveOnly: true)', () => {
     testScheduler.run(({ expectObservable }) => {
       let counter = 0;
@@ -290,12 +290,14 @@ describe('poll operator - extras', () => {
     });
   });
 
-  it('should pause when on other tab', () => {
-    let isTriggered = false;
+  it('should guarantee first emission when tab starts hidden', () => {
+    let pollCallCount = 0;
 
-    setPageActive(false);
+    setDocumentVisibility(false);
+    // Trigger visibility change event to update the cached visibility observable
+    document.dispatchEvent(new Event('visibilitychange'));
 
-    testScheduler.run(async ({ cold, expectObservable }) => {
+    testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('-a|', { a: 'success' });
 
       const result$ = source$.pipe(
@@ -303,18 +305,131 @@ describe('poll operator - extras', () => {
           delay: {
             strategy: 'dynamic',
             time: () => {
-              isTriggered = true;
+              pollCallCount++;
               return 1;
             },
           },
           pauseWhenHidden: true,
         }),
-        take(1)
+        take(2)
       );
 
-      expectObservable(result$).toBe('---');
+      expectObservable(result$).toBe('--a------', { a: 'success' });
     });
 
-    expect(isTriggered).toBe(false);
+    expect(pollCallCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should complete emission then pause polling when tab becomes hidden while source is running', () => {
+    setDocumentVisibility(true);
+
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('-a---|', { a: 'success' });
+
+      const result$ = source$.pipe(
+        poll({
+          delay: {
+            strategy: 'dynamic',
+            time: () => {
+              return 10;
+            },
+          },
+          pauseWhenHidden: true,
+        }),
+        take(2)
+      );
+
+      testScheduler.schedule(() => {
+        setDocumentVisibility(false);
+        document.dispatchEvent(new Event('visibilitychange'));
+      }, 2);
+
+      expectObservable(result$).toBe('-----a-------', { a: 'success' });
+    });
+  });
+});
+
+describe('poll operator (interval) - interval type behavior', () => {
+  it('should poll at fixed intervals regardless of source duration', () => {
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('--a|', { a: 'success' });
+
+      const result$ = source$.pipe(
+        poll({
+          type: 'interval',
+          delay: { strategy: 'constant', time: 10 },
+          pauseWhenHidden: false,
+        }),
+        take(2)
+      );
+
+      const expected = '---a 6ms ---(a|)';
+
+      expectObservable(result$).toBe(expected, { a: 'success' });
+    });
+  });
+
+  it('should interrupt long-running sources', () => {
+    let subscriptionCount = 0;
+
+    testScheduler.run(({ cold, expectObservable }) => {
+      const createSource = () => {
+        subscriptionCount++;
+
+        if (subscriptionCount === 1) {
+          return cold('-----a|', { a: 'first' });
+        } else if (subscriptionCount === 2) {
+          return cold('---------------a|', { a: 'interrupted' });
+        } else {
+          return cold('-----a|', { a: 'third' });
+        }
+      };
+
+      const source$ = cold('a|', { a: 'trigger' }).pipe(switchMap(() => createSource()));
+
+      const result$ = source$.pipe(
+        poll({
+          type: 'interval',
+          delay: { strategy: 'constant', time: 10 },
+          pauseWhenHidden: false,
+        }),
+        take(2)
+      );
+
+      const expected = '6ms a 19ms (b|)';
+
+      expectObservable(result$).toBe(expected, { a: 'first', b: 'third' });
+    });
+  });
+
+  it('should guarantee first emission when tab starts hidden (interval mode)', () => {
+    let pollCallCount = 0;
+
+    setDocumentVisibility(false);
+    // Trigger visibility change event to update the cached visibility observable
+    document.dispatchEvent(new Event('visibilitychange'));
+
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('-a|', { a: 'success' });
+
+      const result$ = source$.pipe(
+        poll({
+          type: 'interval',
+          delay: {
+            strategy: 'dynamic',
+            time: () => {
+              pollCallCount++;
+              return 1;
+            },
+          },
+          pauseWhenHidden: true,
+        }),
+        take(2)
+      );
+
+      expectObservable(result$).toBe('--a------', { a: 'success' });
+    });
+
+    expect(pollCallCount).toBeGreaterThanOrEqual(1);
   });
 });

@@ -1,6 +1,6 @@
 import { TestScheduler } from 'rxjs/testing';
 
-import { retryPoll } from '../../src/common/operators';
+import { retryPoll } from '../../src/observables/retry-operator';
 
 let testScheduler: TestScheduler;
 
@@ -21,8 +21,8 @@ describe('retryPoll', () => {
 
       const result$ = source$.pipe(
         retryPoll(
-          () => false,
           () => 100,
+          () => false,
           resetError
         )
       );
@@ -44,7 +44,7 @@ describe('retryPoll', () => {
       const source$ = cold('--#', undefined, error);
       const expected = '--#';
 
-      const result$ = source$.pipe(retryPoll(isLimit, getTime, resetError));
+      const result$ = source$.pipe(retryPoll(getTime, isLimit, resetError));
 
       expectObservable(result$).toBe(expected, undefined, error);
     });
@@ -62,7 +62,7 @@ describe('retryPoll', () => {
       const source$ = cold('--#', undefined, new Error('test error'));
       const expected = '-- 100ms --#';
 
-      const result$ = source$.pipe(retryPoll(isLimit, getTime, resetError));
+      const result$ = source$.pipe(retryPoll(getTime, isLimit, resetError));
 
       expectObservable(result$).toBe(expected, undefined, new Error('test error'));
     });

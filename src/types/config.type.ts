@@ -4,7 +4,6 @@ import { MinMax, Nil } from './utils.type';
 
 /**
  * Configuration object for the poll operator
- * @template T - Type of the observable value being polled
  */
 export type PollConfig<T> = {
   /**
@@ -27,6 +26,7 @@ export type PollConfig<T> = {
    * - "true": Pause polling when tab isn't active, and resume on active
    * - "false": Poll even when tab isn't focused
    * @default true
+   * @note First emission is guaranteed
    */
   pauseWhenHidden?: boolean | Nil;
 };
@@ -49,7 +49,6 @@ export type PollConfig<T> = {
  * - "random": [min, max]
  * - "dynamic": (state) => number | [min, max]
  *
- * @template T - Type of the observable value being polled
  * @default { strategy: "constant", time: 1000 }
  */
 export type PollDelayConfig<T> =
@@ -79,7 +78,6 @@ export type PollDelayConfig<T> =
  * - "limit": Maximum retry attempts before throwing error
  * - "consecutiveOnly": Whether to count only consecutive retries or all retries
  *
- * @template T - Type of the observable value being polled
  * @default { strategy: "exponential", time: 1000, limit: 3, consecutiveOnly: true }
  */
 export type PollRetryConfig<T> =
@@ -88,7 +86,6 @@ export type PollRetryConfig<T> =
 
 /**
  * Extended configuration that includes computed time producer functions
- * @template T - Type of the observable value being polled
  */
 export type ExtendedPollConfig<T> = NormalizedPollConfig<T> & {
   getDelayTime: PollTimeProducer<T>;
@@ -97,7 +94,6 @@ export type ExtendedPollConfig<T> = NormalizedPollConfig<T> & {
 
 /**
  * Normalized configuration with all optional fields resolved to their default values
- * @template T - Type of the observable value being polled
  */
 export type NormalizedPollConfig<T> = {
   type: PollType;
@@ -108,7 +104,6 @@ export type NormalizedPollConfig<T> = {
 
 /**
  * Normalized delay configuration with resolved defaults
- * @template T - Type of the observable value being polled
  */
 export type NormalizedPollDelayConfig<T> = {
   time: number | MinMax | DynamicFunction<T>;
@@ -117,7 +112,6 @@ export type NormalizedPollDelayConfig<T> = {
 
 /**
  * Normalized retry configuration with resolved defaults
- * @template T - Type of the observable value being polled
  */
 export type NormalizedPollRetryConfig<T> = {
   time: number | MinMax | DynamicFunction<T>;

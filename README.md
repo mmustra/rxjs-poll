@@ -159,12 +159,7 @@ interface PollConfig {
   };
 
   /**
-   * Configuration for retry behavior (on errors).
-   * Can be fully specified with strategy/time, or partially specified with just limit/consecutiveOnly.
-   * If omitted entirely, uses default exponential retry strategy.
-   * - Full config: `{ strategy: '...', time: ..., limit?: ..., consecutiveOnly?: ... }`
-   * - Partial config: `{ limit: ..., consecutiveOnly?: ... }` (uses default strategy/time)
-   * - Omit entirely: Uses all defaults
+   * Configuration for retry behavior (on errors)
    */
   retry?: {
     /**
@@ -173,7 +168,7 @@ interface PollConfig {
      * - consecutiveOnly: true → uses `consecutiveRetryCount`
      * - consecutiveOnly: false → uses `retryCount`
      * @default 'exponential'
-     * @note Required if `time` is provided, otherwise omitted to use defaults
+     * @note Required if `time` is provided, otherwise uses default
      */
     strategy: 'constant' | 'linear' | 'exponential' | 'random' | 'dynamic';
 
@@ -185,7 +180,7 @@ interface PollConfig {
      * - random: [min, max]
      * - dynamic: (state) => number | [min, max]
      * @default 1000
-     * @note Required if `strategy` is provided, otherwise omitted to use defaults
+     * @note Required if `strategy` is provided, otherwise uses default
      */
     time:
       | number
@@ -215,6 +210,7 @@ interface PollConfig {
    * - true: Pause polling when tab isn't active, and resume on active
    * - false: Poll even when tab isn't focused
    * @default true
+   * @note First emission is guaranteed
    */
   pauseWhenHidden?: boolean;
 }
