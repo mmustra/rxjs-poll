@@ -8,16 +8,16 @@ import { repeatWith$ } from './repeat-with';
 /**
  * Builds an interval-based poller that polls at fixed intervals regardless of source duration.
  * If a source takes longer than the interval, it will be interrupted.
- * @param sharedSource$ - The shared source observable to poll
+ * @param source$ - The source observable to poll
  * @param options - See {@link PollerBuilderOptions}
  * @returns Observable that emits values from the source at fixed intervals
  */
 export function buildIntervalPoller$<T>(
-  sharedSource$: Observable<T>,
+  source$: Observable<T>,
   { nextDelayTime, pauseWhenHidden }: PollerBuilderOptions<T>
 ): Observable<T> {
   if (!isBrowser() || !pauseWhenHidden) {
-    return repeatWith$(of(null), () => nextDelayTime()).pipe(switchMap(() => sharedSource$));
+    return repeatWith$(of(null), () => nextDelayTime()).pipe(switchMap(() => source$));
   }
 
   let currentDelay = 0;
@@ -27,5 +27,5 @@ export function buildIntervalPoller$<T>(
   });
   const pauser$ = defer(() => timer(currentDelay));
 
-  return withDocumentVisibility$(trigger$, pauser$).pipe(switchMap(() => sharedSource$));
+  return withDocumentVisibility$(trigger$, pauser$).pipe(switchMap(() => source$));
 }

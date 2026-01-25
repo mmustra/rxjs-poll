@@ -1,4 +1,4 @@
-import { Observable, share, takeLast, tap } from 'rxjs';
+import { Observable, takeLast, tap } from 'rxjs';
 
 import { ExtendedPollConfig } from '../types/config.type';
 import { NextTimeProducer } from '../types/observables.type';
@@ -24,8 +24,7 @@ export function getPollerFactory<T>(
     takeLast(1),
     tap((value) => {
       lastValue = value;
-    }),
-    share()
+    })
   );
 
   return function createPoller(state: PollState<T>) {
