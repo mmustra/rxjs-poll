@@ -1,4 +1,4 @@
-import { finalize, Observable, Subject, switchMap, timer } from 'rxjs';
+import { auditTime, finalize, Observable, Subject } from 'rxjs';
 
 import { isBrowser } from '../common/utils';
 import { PollerBuilderOptions } from '../types/observables.type';
@@ -28,7 +28,7 @@ export function buildRepeatPoller$<T>(
     return currentDelay;
   });
 
-  const pauser$ = pauseTrigger$.pipe(switchMap(() => timer(currentDelay)));
+  const pauser$ = pauseTrigger$.pipe(auditTime(currentDelay));
 
   return withDocumentVisibility$(poller$, pauser$);
 }

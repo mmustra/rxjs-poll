@@ -320,6 +320,34 @@ describe('poll operator (repeat) - extras', () => {
     expect(pollCallCount).toBeGreaterThanOrEqual(1);
   });
 
+  it('should guarantee started cycle finishes when tab becomes hidden during multi-emission source', () => {
+    setDocumentVisibility(true);
+
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('---a--b--(c|)', { a: 'A', b: 'B', c: 'C' });
+
+      const result$ = source$.pipe(
+        poll({
+          delay: {
+            strategy: 'constant',
+            time: 20,
+          },
+          pauseWhenHidden: true,
+        }),
+        take(1)
+      );
+
+      testScheduler.schedule(() => {
+        setDocumentVisibility(false);
+        document.dispatchEvent(new Event('visibilitychange'));
+      }, 5);
+
+      const expected = '---------(c|)';
+
+      expectObservable(result$).toBe(expected, { c: 'C' });
+    });
+  });
+
   it('should complete emission then pause polling when tab becomes hidden while source is running', () => {
     setDocumentVisibility(true);
 
@@ -431,5 +459,34 @@ describe('poll operator (interval) - interval type behavior', () => {
     });
 
     expect(pollCallCount).toBeGreaterThanOrEqual(1);
+  });
+
+  it('should guarantee started cycle finishes when tab becomes hidden during multi-emission source (interval mode)', () => {
+    setDocumentVisibility(true);
+
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('----a--b--(c|)', { a: 'A', b: 'B', c: 'C' });
+
+      const result$ = source$.pipe(
+        poll({
+          type: 'interval',
+          delay: {
+            strategy: 'constant',
+            time: 30,
+          },
+          pauseWhenHidden: true,
+        }),
+        take(1)
+      );
+
+      testScheduler.schedule(() => {
+        setDocumentVisibility(false);
+        document.dispatchEvent(new Event('visibilitychange'));
+      }, 6);
+
+      const expected = '----------(c|)';
+
+      expectObservable(result$).toBe(expected, { c: 'C' });
+    });
   });
 });

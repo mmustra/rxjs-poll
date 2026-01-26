@@ -1,5 +1,5 @@
 import {
-  combineLatest,
+  EMPTY,
   exhaustMap,
   filter,
   fromEvent,
@@ -7,7 +7,7 @@ import {
   Observable,
   shareReplay,
   startWith,
-  take,
+  switchMap,
   takeUntil,
   tap,
 } from 'rxjs';
@@ -16,15 +16,14 @@ import { isDocumentVisible } from '../common/utils';
 
 /**
  * Wraps a poller observable with document visibility control.
- * Guarantees first emission regardless of visibility state, then pauses/resumes based on document visibility.
+ * Guarantees every started cycle finishes before pausing, then pauses/resumes based on document visibility.
  * @param poller$ - The polling observable to wrap
- * @param pauser$ - Observable that determines when to pause (after first emission)
+ * @param pauser$ - Observable that determines when to pause (after cycle completes)
  * @returns Observable that emits values from poller$ with visibility-aware pausing
- * @note First emission is always guaranteed, even if document is hidden
  */
 export function withDocumentVisibility$<T>(poller$: Observable<T>, pauser$: Observable<unknown>): Observable<T> {
   const visibility$ = getDocumentVisibility$();
-  const pause$ = combineLatest([visibility$, pauser$.pipe(take(1))]).pipe(filter(([isVisible]) => !isVisible));
+  const pause$ = visibility$.pipe(switchMap((isVisible) => (isVisible ? EMPTY : pauser$)));
   let emissionStarted = true;
 
   return visibility$.pipe(

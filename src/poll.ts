@@ -29,7 +29,6 @@ import { Nil } from './types/utils.type';
  * @param config - {@link PollConfig} object used for configuration
  * @return Function that returns an Observable handling resubscription \
  * to the source on complete or error
- * @note First emission is guaranteed
  */
 export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<T> {
   return (source$) => {

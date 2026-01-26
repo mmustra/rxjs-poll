@@ -21,10 +21,12 @@ export function buildIntervalPoller$<T>(
   }
 
   let currentDelay = 0;
+
   const trigger$ = repeatWith$(of(null), () => {
     currentDelay = nextDelayTime();
     return currentDelay;
   });
+
   const pauser$ = defer(() => timer(currentDelay));
 
   return withDocumentVisibility$(trigger$, pauser$).pipe(switchMap(() => source$));

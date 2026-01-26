@@ -26,7 +26,7 @@ export type PollConfig<T> = {
    * - "true": Pause polling when tab isn't active, and resume on active
    * - "false": Poll even when tab isn't focused
    * @default true
-   * @note First emission is guaranteed
+   * @note Every started cycle finishes before pausing
    */
   pauseWhenHidden?: boolean | Nil;
 };
