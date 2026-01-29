@@ -50,4 +50,3 @@ When using `rxjs-poll`:
 - Report any suspicious behavior or potential security issues
 
 Thank you for helping keep `rxjs-poll` and its users safe!
-

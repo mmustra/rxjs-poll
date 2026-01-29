@@ -21,7 +21,7 @@ import { Nil } from './types/utils.type';
  * request$
  *   .pipe(
  *     poll(),
- *     takeWhile(({ isDone }) => !isDone, true)
+ *     takeWhile(({ status }) => status !== 'done', true)
  *   )
  *   .subscribe();
  * ```
