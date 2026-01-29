@@ -1,33 +1,69 @@
-import { defer, Observable, of, switchMap, timer } from 'rxjs';
+import { Observable, of, Subject, switchMap, tap } from 'rxjs';
 
 import { isBrowser } from '../common/utils';
-import { PollerBuilderOptions } from '../types/observables.type';
+import { retryPoll } from '../operators/retry-pol.operator';
+import { PollStateService } from '../types/service.type';
 import { withDocumentVisibility$ } from './document-visibility';
+import { getPauseDelay$ } from './pause-delay';
 import { repeatWith$ } from './repeat-with';
 
 /**
  * Builds an interval-based poller that polls at fixed intervals regardless of source duration.
  * If a source takes longer than the interval, it will be interrupted.
  * @param source$ - The source observable to poll
- * @param options - See {@link PollerBuilderOptions}
+ * @param pollService - Poll state service managing configuration and state
  * @returns Observable that emits values from the source at fixed intervals
  */
-export function buildIntervalPoller$<T>(
-  source$: Observable<T>,
-  { nextDelayTime, pauseWhenHidden }: PollerBuilderOptions<T>
-): Observable<T> {
-  if (!isBrowser() || !pauseWhenHidden) {
-    return repeatWith$(of(null), () => nextDelayTime()).pipe(switchMap(() => source$));
+export function buildIntervalPoller$<T>(source$: Observable<T>, pollService: PollStateService<T>): Observable<T> {
+  if (!isBrowser() || !pollService.config.pauseWhenHidden) {
+    return repeatWith$(of(null), () => {
+      pollService.incrementPoll();
+      return pollService.getDelayTime();
+    }).pipe(
+      switchMap(() => source$),
+      retryPoll(pollService)
+    );
   }
 
-  let currentDelay = 0;
+  const pauseTrigger$ = new Subject<void>();
+  let time = 0;
+  let sourceStartTime = 0;
+  let sourceEndTime = 0;
 
-  const trigger$ = repeatWith$(of(null), () => {
-    currentDelay = nextDelayTime();
-    return currentDelay;
-  });
+  const poller$ = repeatWith$(of(null), () => {
+    pollService.incrementPoll();
+    time = pollService.getDelayTime();
+    return time;
+  }).pipe(
+    switchMap(() =>
+      source$.pipe(
+        tap({
+          subscribe: () => {
+            sourceStartTime = performance.now();
+          },
+          finalize: () => {
+            sourceEndTime = performance.now();
 
-  const pauser$ = defer(() => timer(currentDelay));
+            pauseTrigger$.next();
+          },
+        })
+      )
+    ),
+    retryPoll(pollService, () => {
+      time = pollService.getRetryTime();
+      return time;
+    })
+  );
 
-  return withDocumentVisibility$(trigger$, pauser$).pipe(switchMap(() => source$));
+  const pauser$ = pauseTrigger$.pipe(
+    switchMap(() =>
+      getPauseDelay$({
+        time,
+        sourceStartTime,
+        sourceEndTime,
+      })
+    )
+  );
+
+  return withDocumentVisibility$(poller$, pauser$);
 }

@@ -1,5 +1,5 @@
 import { extendConfig } from '../../src/common/config';
-import { controlConfig } from '../../src/constants/config.const';
+import { defaultConfig } from '../../src/constants/config.const';
 import { strategyType } from '../../src/constants/strategies.const';
 import { PollConfig } from '../../src/types/config.type';
 import { PollState } from '../../src/types/poll.type';
@@ -8,7 +8,7 @@ it('should extend config with default values when nothing is provided', () => {
   const result = extendConfig();
 
   expect(result).toEqual({
-    ...controlConfig,
+    ...defaultConfig,
     getDelayTime: expect.any(Function),
     getRetryTime: expect.any(Function),
   });

@@ -1,12 +1,9 @@
 import * as indexExports from '../src';
 
 describe('Constants exports', () => {
-  it('should export pollType', () => {
+  it('should export pollType and strategyType', () => {
     expect(indexExports.pollType).toBeDefined();
     expect(typeof indexExports.pollType).toBe('object');
-  });
-
-  it('should export strategyType', () => {
     expect(indexExports.strategyType).toBeDefined();
     expect(typeof indexExports.strategyType).toBe('object');
   });
@@ -20,17 +17,11 @@ describe('Function exports', () => {
 });
 
 describe('Type exports', () => {
-  it('should have correct export structure', () => {
+  it('should have correct export structure and no undefined values', () => {
     const expectedExports = ['pollType', 'strategyType', 'poll'];
-
     expectedExports.forEach((exportName) => {
       expect(indexExports).toHaveProperty(exportName);
-    });
-  });
-
-  it('should not export undefined values', () => {
-    Object.values(indexExports).forEach((exportValue) => {
-      expect(exportValue).toBeDefined();
+      expect(indexExports[exportName as keyof typeof indexExports]).toBeDefined();
     });
   });
 });

@@ -1,9 +1,9 @@
 import {
-  EMPTY,
   exhaustMap,
   filter,
   fromEvent,
   map,
+  NEVER,
   Observable,
   shareReplay,
   startWith,
@@ -23,7 +23,7 @@ import { isDocumentVisible } from '../common/utils';
  */
 export function withDocumentVisibility$<T>(poller$: Observable<T>, pauser$: Observable<unknown>): Observable<T> {
   const visibility$ = getDocumentVisibility$();
-  const pause$ = visibility$.pipe(switchMap((isVisible) => (isVisible ? EMPTY : pauser$)));
+  const pause$ = visibility$.pipe(switchMap((isVisible) => (isVisible ? NEVER : pauser$)));
   let emissionStarted = true;
 
   return visibility$.pipe(

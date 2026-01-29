@@ -1,4 +1,4 @@
-import { controlConfig } from '../constants/config.const';
+import { defaultConfig } from '../constants/config.const';
 import { ExtendedPollConfig, NormalizedPollConfig, PollConfig } from '../types/config.type';
 import { PollMode, PollTimeProducer } from '../types/poll.type';
 import { Nil } from '../types/utils.type';
@@ -16,7 +16,7 @@ export function extendConfig<T>(config?: PollConfig<T> | Nil): ExtendedPollConfi
 }
 
 function getTimeProducer<T>(mode: PollMode, config: NormalizedPollConfig<T>): PollTimeProducer<T> {
-  const defaultTime = controlConfig[mode].time;
+  const defaultTime = defaultConfig[mode].time;
   const timeProducer = getStrategyTimeProducer(mode, config);
 
   return (state): number => {
@@ -29,21 +29,21 @@ function getTimeProducer<T>(mode: PollMode, config: NormalizedPollConfig<T>): Po
 
 function normalizeConfig<T>(config: PollConfig<T> | Nil): NormalizedPollConfig<T> {
   return {
-    type: config?.type ?? controlConfig.type,
+    type: config?.type ?? defaultConfig.type,
     delay: {
-      strategy: config?.delay?.strategy ?? controlConfig.delay.strategy,
+      strategy: config?.delay?.strategy ?? defaultConfig.delay.strategy,
       time: isFunction(config?.delay?.time)
         ? config.delay.time
-        : normalizeNumber(config?.delay?.time, controlConfig.delay.time),
+        : normalizeNumber(config?.delay?.time, defaultConfig.delay.time),
     },
     retry: {
-      strategy: config?.retry?.strategy ?? controlConfig.retry.strategy,
+      strategy: config?.retry?.strategy ?? defaultConfig.retry.strategy,
       time: isFunction(config?.retry?.time)
         ? config.retry.time
-        : normalizeNumber(config?.retry?.time, controlConfig.retry.time),
-      limit: normalizeNumber(config?.retry?.limit, controlConfig.retry.limit, false),
-      consecutiveOnly: config?.retry?.consecutiveOnly ?? controlConfig.retry.consecutiveOnly,
+        : normalizeNumber(config?.retry?.time, defaultConfig.retry.time),
+      limit: normalizeNumber(config?.retry?.limit, defaultConfig.retry.limit, false),
+      consecutiveOnly: config?.retry?.consecutiveOnly ?? defaultConfig.retry.consecutiveOnly,
     },
-    pauseWhenHidden: config?.pauseWhenHidden ?? controlConfig.pauseWhenHidden,
+    pauseWhenHidden: config?.pauseWhenHidden ?? defaultConfig.pauseWhenHidden,
   };
 }

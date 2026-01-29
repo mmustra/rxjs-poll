@@ -15,6 +15,42 @@
 - **value**: Changed to type `T | undefined`
 - **error**: Changed to type `any | undefined`
 
+## Behavioral Improvements
+
+### Enhanced Pause Handling
+
+When `pauseWhenHidden` is enabled (default in v2), polling cycles (poll or retry) that have already started will complete before pausing occurs. This ensures operations are never interrupted mid-execution when tab visibility changes.
+
+**Example**:
+
+```typescript
+// If your source observable takes 5 seconds to complete
+// and the tab becomes hidden at 3 seconds:
+request$.pipe(poll({ pauseWhenHidden: true })).subscribe(console.log);
+
+// v1: Operation is interrupted at 3 seconds
+// v2: Operation completes after 5 seconds, then pausing occurs
+```
+
+### Guaranteed First Emission
+
+First emission is now guaranteed even when:
+
+- The tab starts in a hidden state
+- Tab visibility changes during polling
+
+This provides more predictable behavior for applications that start or run in background tabs.
+
+**Example**:
+
+```typescript
+// Tab is hidden when polling starts
+request$.pipe(poll({ pauseWhenHidden: true })).subscribe(console.log);
+
+// v1: Waits for tab to become visible before first poll
+// v2: First poll executes immediately, subsequent polls respect visibility
+```
+
 ## Migration Examples
 
 ### Basic

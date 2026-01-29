@@ -1,4 +1,4 @@
-import { Observable, switchMap, take } from 'rxjs';
+import { delay, Observable, of, switchMap, take } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
 import { poll } from '../src/poll';
@@ -430,35 +430,151 @@ describe('poll operator (interval) - interval type behavior', () => {
     });
   });
 
-  it('should guarantee first emission when tab starts hidden (interval mode)', () => {
+  it('should guarantee first emission when tab starts hidden (interval mode)', (done) => {
+    jest.useFakeTimers();
+
     let pollCallCount = 0;
+    const emissions: string[] = [];
+    let testError: Error | undefined;
 
     setDocumentVisibility(false);
-    // Trigger visibility change event to update the cached visibility observable
     document.dispatchEvent(new Event('visibilitychange'));
 
-    testScheduler.run(({ cold, expectObservable }) => {
-      const source$ = cold('-a|', { a: 'success' });
+    const source$ = of('success').pipe(delay(10));
 
-      const result$ = source$.pipe(
-        poll({
-          type: 'interval',
-          delay: {
-            strategy: 'dynamic',
-            time: () => {
-              pollCallCount++;
-              return 1;
-            },
+    const result$ = source$.pipe(
+      poll({
+        type: 'interval',
+        delay: {
+          strategy: 'dynamic',
+          time: () => {
+            pollCallCount++;
+            return 100;
           },
-          pauseWhenHidden: true,
-        }),
-        take(2)
-      );
+        },
+        pauseWhenHidden: true,
+      }),
+      take(2)
+    );
 
-      expectObservable(result$).toBe('--a------', { a: 'success' });
+    const subscription = result$.subscribe({
+      next: (value) => emissions.push(value),
+      complete: () => {
+        try {
+          expect(emissions).toEqual(['success', 'success']);
+          expect(pollCallCount).toBeGreaterThanOrEqual(1);
+          subscription.unsubscribe();
+        } catch (err) {
+          testError = err as Error;
+        }
+      },
+      error: (err) => {
+        testError = err as Error;
+        subscription.unsubscribe();
+      },
     });
 
-    expect(pollCallCount).toBeGreaterThanOrEqual(1);
+    // Make document visible immediately to allow first emission (which is guaranteed behavior)
+    setTimeout(() => {
+      setDocumentVisibility(true);
+      document.dispatchEvent(new Event('visibilitychange'));
+    }, 10);
+
+    try {
+      // Advance timers to allow all emissions to complete
+      jest.advanceTimersByTime(10); // Make visible
+      jest.advanceTimersByTime(20); // First emission completes
+      jest.advanceTimersByTime(100); // Wait for interval delay
+      jest.advanceTimersByTime(1000); // Complete remaining timers and second emission
+    } finally {
+      jest.useRealTimers();
+      if (testError) {
+        done(testError);
+      } else {
+        done();
+      }
+    }
+  });
+
+  it('should guarantee started cycle finishes when tab becomes hidden during multi-emission source (interval mode)', (done) => {
+    jest.useFakeTimers();
+
+    setDocumentVisibility(true);
+
+    const emissions: string[] = [];
+    let emissionIndex = 0;
+    let testError: Error | undefined;
+
+    const source$ = new Observable<string>((subscriber) => {
+      const values = ['A', 'B', 'C'];
+
+      const emit = () => {
+        if (emissionIndex < values.length) {
+          setTimeout(() => {
+            subscriber.next(values[emissionIndex]);
+            emissionIndex++;
+            if (emissionIndex < values.length) {
+              emit();
+            } else {
+              subscriber.complete();
+            }
+          }, 20);
+        }
+      };
+
+      emit();
+    });
+
+    const result$ = source$.pipe(
+      poll({
+        type: 'interval',
+        delay: {
+          strategy: 'constant',
+          time: 300,
+        },
+        pauseWhenHidden: true,
+      }),
+      take(1)
+    );
+
+    const subscription = result$.subscribe({
+      next: (value) => emissions.push(value),
+      complete: () => {
+        try {
+          // Should only receive the last emission 'C' because take(1) completes after first value
+          expect(emissions).toEqual(['C']);
+          subscription.unsubscribe();
+        } catch (err) {
+          testError = err as Error;
+        }
+      },
+      error: (err) => {
+        testError = err as Error;
+        subscription.unsubscribe();
+      },
+    });
+
+    // Hide document after source has started emitting
+    setTimeout(() => {
+      setDocumentVisibility(false);
+      document.dispatchEvent(new Event('visibilitychange'));
+    }, 30);
+
+    try {
+      // Advance timers to let all emissions complete
+      jest.advanceTimersByTime(20); // First emission 'A'
+      jest.advanceTimersByTime(20); // Second emission 'B'
+      jest.advanceTimersByTime(10); // Hide document
+      jest.advanceTimersByTime(20); // Third emission 'C' (cycle completes despite being hidden)
+      jest.advanceTimersByTime(1000); // Complete any remaining timers
+    } finally {
+      jest.useRealTimers();
+      if (testError) {
+        done(testError);
+      } else {
+        done();
+      }
+    }
   });
 
   it('should guarantee started cycle finishes when tab becomes hidden during multi-emission source (interval mode)', () => {

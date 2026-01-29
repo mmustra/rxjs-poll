@@ -1,8 +1,8 @@
-import { controlConfig } from '../../src/constants/config.const';
+import { defaultConfig } from '../../src/constants/config.const';
 
-describe('controlConfig', () => {
-  it('should have correct default configuration', () => {
-    expect(controlConfig).toEqual({
+describe('defaultConfig', () => {
+  it('should have correct default values', () => {
+    expect(defaultConfig).toEqual({
       type: 'repeat',
       delay: {
         strategy: 'constant',

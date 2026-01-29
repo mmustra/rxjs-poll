@@ -22,20 +22,7 @@ describe('repeatWith$', () => {
       const expected = '--a 10ms --a 10ms --(a|)';
 
       expectObservable(result$).toBe(expected, { a: 'value' });
-    });
-  });
-
-  it('should call getTime function for each repetition', () => {
-    testScheduler.run(({ cold, expectObservable }) => {
-      const source$ = cold('--a|', { a: 'value' });
-      const getTime = jest.fn().mockReturnValue(5);
-
-      const result$ = repeatWith$(source$, getTime).pipe(take(3));
-      const expected = '--a 5ms --a 5ms --(a|)';
-
-      expectObservable(result$).toBe(expected, { a: 'value' });
       testScheduler.flush();
-
       expect(getTime).toHaveBeenCalledTimes(2);
     });
   });

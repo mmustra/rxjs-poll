@@ -2,7 +2,7 @@ import { NormalizedPollConfig } from '../types/config.type';
 import { pollType } from './poll.const';
 import { strategyType } from './strategies.const';
 
-export const controlConfig = {
+export const defaultConfig = {
   type: pollType.REPEAT,
   delay: {
     strategy: strategyType.CONSTANT,

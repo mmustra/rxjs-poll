@@ -1,4 +1,5 @@
 import { pollMode, pollType } from '../constants/poll.const';
+import { RetryKey } from './retry.type';
 
 /**
  * Defines the polling behavior mode
@@ -31,13 +32,6 @@ export type PollState<T> = {
    * - "consecutiveRetryCount": Current number of consecutive retry attempts
    */
 } & Record<RetryKey, number>;
-
-/**
- * Keys for retry counting in PollState
- * - "retryCount": Total number of retry attempts
- * - "consecutiveRetryCount": Current number of consecutive retry attempts
- */
-export type RetryKey = 'retryCount' | 'consecutiveRetryCount';
 
 /**
  * All possible keys in the PollState object

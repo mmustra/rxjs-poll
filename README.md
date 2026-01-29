@@ -14,11 +14,12 @@ A flexible RxJS operator library that enables polling on any completed observabl
 - **Two polling types**: `repeat` and `interval` to suit different use cases
 - **Timing strategies**: `constant`, `linear`, `exponential`, `random` and `dynamic` (custom logic)
 - **Auto-pause**: Automatically pause/resume polling based on page visibility (browser only)
+- **Reliable execution**: First and in-flight cycles (poll or retry) guaranteed
 - **Flexible retries**: Control retry attempts with consecutive or total counting modes
 - **Input validation**: Guards against unexpected input time values
 - **Cross-platform**: Works in both browser and Node.js environments
 - **Modern compatibility**: Compatible with RxJS v7+
-- **Multiple module formats**: Supports CJS, ESM, and UMD
+- **Module formats**: Supports CJS, ESM, and UMD
 
 ## 📦 Installation
 
@@ -210,7 +211,7 @@ interface PollConfig {
    * - true: Pause polling when tab isn't active, and resume on active
    * - false: Poll even when tab isn't focused
    * @default true
-   * @note Every started cycle finishes before pausing
+   * @note Every started cycle (poll or retry) finishes before pausing
    */
   pauseWhenHidden?: boolean;
 }

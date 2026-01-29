@@ -1,8 +1,8 @@
 import { MonoTypeOperatorFunction } from 'rxjs';
 
 import { extendConfig } from './common/config';
-import { createState } from './common/state';
-import { getPollerFactory } from './observables/poller-factory';
+import { createPollService } from './common/service';
+import { createPoller$ } from './observables/factory';
 import { PollConfig } from './types/config.type';
 import { Nil } from './types/utils.type';
 
@@ -33,10 +33,8 @@ import { Nil } from './types/utils.type';
 export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<T> {
   return (source$) => {
     const extendedConfig = extendConfig(config);
-    const state = createState<T>();
-
-    const createPoller = getPollerFactory(source$, extendedConfig);
-    const poller$ = createPoller(state);
+    const pollService = createPollService(extendedConfig);
+    const poller$ = createPoller$(source$, pollService);
 
     return poller$;
   };
