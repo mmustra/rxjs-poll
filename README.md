@@ -33,7 +33,7 @@ Polling is essential when you need to repeatedly check for updates from sources 
 
 This operator cleanly separates polling concerns from your core observable logic. It waits for your source observable to complete per polling type, then schedules the next poll based on your configuration. The architecture distinguishes between normal polling delays and error retry scenarios, giving you precise control over both success and failure timing strategies.
 
-## 📚 Usage Examples
+## 🧪 Usage Examples
 
 ### Default Configuration
 
@@ -82,7 +82,7 @@ request$
 
 ### Advanced Dynamic Strategies
 
-[▶️ Live Demo](https://stackblitz.com/edit/rxjs-6fmgfij8?devtoolsheight=100&file=index.ts)
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-6fmgfij8?devToolsHeight=100&file=index.ts)
 
 Implement complex polling strategies with dynamic timing based on poll state.
 
@@ -243,11 +243,10 @@ interface PollState<T> {
 /** Note: pollCount + retryCount = total attempts */
 ```
 
-## 🚨 Breaking Changes
+## 📚 Additional Resources
 
-**Version 2** ([source](https://github.com/mmustra/rxjs-poll)) introduces an API focused on strategy-based configuration with improved type safety and clearer separation between polling delays and retry behavior. See [V2 Changes](docs/V2_CHANGES.md) for detailed migration guide and examples.
-
-**Version 1** ([source](https://github.com/mmustra/rxjs-poll/tree/v1)) will continue to receive bug fixes and security updates.
+- **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[V2 Changes](docs/V2_CHANGES.md)** - Overview of the changes and migration steps
 
 ## 🤝 Contributing
 

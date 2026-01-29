@@ -1,19 +1,8 @@
-# Changes in v2
+# V2 Changes
 
-### PollConfig
+**Version 2** ([source](https://github.com/mmustra/rxjs-poll)) introduces an API focused on strategy-based configuration with improved type safety and clearer separation between polling delays and retry behavior.
 
-- **delay/retry**: Added configuration objects for polling and retry
-- **retries**: Renamed and moved to `retry.limit`
-- **isConsecutiveRule**: Renamed and moved to `retry.consecutiveOnly`
-- **isBackgroundMode**: Renamed to `pauseWhenHidden` and default behavior inverted (`false` → `true`)
-
-### PollState
-
-- **polls**: Renamed to `pollCount`
-- **retries**: Renamed to `retryCount`
-- **consecutiveRetries**: Renamed to `consecutiveRetryCount`
-- **value**: Changed to type `T | undefined`
-- **error**: Changed to type `any | undefined`
+**Version 1** ([source](https://github.com/mmustra/rxjs-poll/tree/v1)) will continue to receive bug fixes and security updates.
 
 ## Behavioral Improvements
 
@@ -50,6 +39,23 @@ request$.pipe(poll({ pauseWhenHidden: true })).subscribe(console.log);
 // v1: Waits for tab to become visible before first poll
 // v2: First poll executes immediately, subsequent polls respect visibility
 ```
+
+## API Changes
+
+### PollConfig
+
+- **delay/retry**: Added configuration objects for polling and retry
+- **retries**: Renamed and moved to `retry.limit`
+- **isConsecutiveRule**: Renamed and moved to `retry.consecutiveOnly`
+- **isBackgroundMode**: Renamed to `pauseWhenHidden` and default behavior inverted (`false` → `true`)
+
+### PollState
+
+- **polls**: Renamed to `pollCount`
+- **retries**: Renamed to `retryCount`
+- **consecutiveRetries**: Renamed to `consecutiveRetryCount`
+- **value**: Changed to type `T | undefined`
+- **error**: Changed to type `any | undefined`
 
 ## Migration Examples
 

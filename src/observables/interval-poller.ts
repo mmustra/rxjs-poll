@@ -43,7 +43,6 @@ export function buildIntervalPoller$<T>(source$: Observable<T>, pollService: Pol
           },
           finalize: () => {
             sourceEndTime = performance.now();
-
             pauseTrigger$.next();
           },
         })

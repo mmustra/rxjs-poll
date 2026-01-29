@@ -84,6 +84,7 @@ Example: `feat: add custom retry strategy support`
    ```
 
 5. Build the project:
+
    ```bash
    npm run build
    ```

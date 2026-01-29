@@ -68,7 +68,7 @@ describe('pickNumber', () => {
 });
 
 describe('randomNumber', () => {
-  it('should return a number that is different then min and max', () => {
+  it('should return a number that is different from min and max', () => {
     const min = 1;
     const max = 1000;
     const results = new Set<number>();
