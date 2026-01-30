@@ -375,6 +375,56 @@ describe('poll operator (repeat) - extras', () => {
       expectObservable(result$).toBe('-----a-------', { a: 'success' });
     });
   });
+
+  describe('pauseWhenHidden: true vs false', () => {
+    it('when pauseWhenHidden is true, polling pauses when tab becomes hidden (only one emission in window)', () => {
+      setDocumentVisibility(true);
+
+      testScheduler.run(({ cold, expectObservable }) => {
+        const source$ = cold('-a---|', { a: 'success' });
+
+        const result$ = source$.pipe(
+          poll({
+            delay: { strategy: 'constant', time: 10 },
+            pauseWhenHidden: true,
+          }),
+          take(2)
+        );
+
+        testScheduler.schedule(() => {
+          setDocumentVisibility(false);
+          document.dispatchEvent(new Event('visibilitychange'));
+        }, 2);
+
+        // Tab hidden at frame 2 → next poll is paused; only first emission within 13 frames
+        expectObservable(result$).toBe('-----a-------', { a: 'success' });
+      });
+    });
+
+    it('when pauseWhenHidden is false, polling continues when tab becomes hidden (second emission on schedule)', () => {
+      setDocumentVisibility(true);
+
+      testScheduler.run(({ cold, expectObservable }) => {
+        const source$ = cold('-a---|', { a: 'success' });
+
+        const result$ = source$.pipe(
+          poll({
+            delay: { strategy: 'constant', time: 10 },
+            pauseWhenHidden: false,
+          }),
+          take(2)
+        );
+
+        testScheduler.schedule(() => {
+          setDocumentVisibility(false);
+          document.dispatchEvent(new Event('visibilitychange'));
+        }, 2);
+
+        // Tab hidden at frame 2 is ignored → second poll after 10ms (frame 15), source completes at 20
+        expectObservable(result$).toBe('-----a--------------(a|)', { a: 'success' });
+      });
+    });
+  });
 });
 
 describe('poll operator (interval) - interval type behavior', () => {

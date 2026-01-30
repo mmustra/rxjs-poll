@@ -1,7 +1,7 @@
 import { Observable, of, Subject, switchMap, tap } from 'rxjs';
 
 import { isBrowser } from '../common/utils';
-import { retryPoll } from '../operators/retry-pol.operator';
+import { retryPoll } from '../operators/retry-poll.operator';
 import { PollStateService } from '../types/service.type';
 import { withDocumentVisibility$ } from './document-visibility';
 import { getPauseDelay$ } from './pause-delay';

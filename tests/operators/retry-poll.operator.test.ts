@@ -1,6 +1,6 @@
 import { TestScheduler } from 'rxjs/testing';
 
-import { retryPoll } from '../../src/operators/retry-pol.operator';
+import { retryPoll } from '../../src/operators/retry-poll.operator';
 import { NormalizedPollConfig } from '../../src/types/config.type';
 import { PollStateService } from '../../src/types/service.type';
 
