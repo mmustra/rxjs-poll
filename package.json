@@ -35,9 +35,6 @@
   "bugs": {
     "url": "https://github.com/mmustra/rxjs-poll/issues"
   },
-  "volta": {
-    "node": "24"
-  },
   "scripts": {
     "release": "release-it",
     "build": "npm run util:clean:dist && npm run build:rollup && npm run build:types",
@@ -127,5 +124,8 @@
     "ts-jest": "29.4.6",
     "ts-node": "10.9.2",
     "typescript": "5.9.3"
+  },
+  "volta": {
+    "node": "24.13.0"
   }
 }
