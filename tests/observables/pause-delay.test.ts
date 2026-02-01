@@ -14,41 +14,41 @@ beforeEach(() => {
 describe('pause-delay', () => {
   describe('getPauseDelay$', () => {
     describe('interval-style (time and source times)', () => {
-      it('should emit null after delay when computed delay is positive', () => {
+      it('should emit 0 after delay when computed delay is positive', () => {
         testScheduler.run(({ expectObservable }) => {
           const result$ = getPauseDelay$({
             time: 200,
             sourceStartTime: 0,
             sourceEndTime: 50,
           }).pipe(take(1));
-          expectObservable(result$).toBe('50ms (n|)', { n: null });
+          expectObservable(result$).toBe('50ms (n|)', { n: 0 });
         });
       });
 
-      it('should emit null immediately when computed delay is zero or negative', () => {
+      it('should emit 0 immediately when computed delay is zero or negative', () => {
         testScheduler.run(({ expectObservable }) => {
           const result$ = getPauseDelay$({
             time: 50,
             sourceStartTime: 0,
             sourceEndTime: 250,
           }).pipe(take(1));
-          expectObservable(result$).toBe('(n|)', { n: null });
+          expectObservable(result$).toBe('(n|)', { n: 0 });
         });
       });
     });
 
     describe('repeat-style (time only)', () => {
-      it('should emit null after delay when time > timingToleranceMs', () => {
+      it('should emit 0 after delay when time > timingToleranceMs', () => {
         testScheduler.run(({ expectObservable }) => {
           const result$ = getPauseDelay$({ time: 200 }).pipe(take(1));
-          expectObservable(result$).toBe('100ms (n|)', { n: null });
+          expectObservable(result$).toBe('100ms (n|)', { n: 0 });
         });
       });
 
-      it('should emit null immediately when time <= timingToleranceMs', () => {
+      it('should emit 0 immediately when time <= timingToleranceMs', () => {
         testScheduler.run(({ expectObservable }) => {
           const result$ = getPauseDelay$({ time: 25 }).pipe(take(1));
-          expectObservable(result$).toBe('(n|)', { n: null });
+          expectObservable(result$).toBe('(n|)', { n: 0 });
         });
       });
     });
