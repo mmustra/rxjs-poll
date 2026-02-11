@@ -2,60 +2,60 @@ import { defaultState } from '../constants/state.const';
 import { ExtendedPollConfig, NormalizedPollConfig } from '../types/config.type';
 import { PollState } from '../types/poll.type';
 import { RetryKey } from '../types/retry.type';
-import { PollStateService } from '../types/service.type';
 
 /**
- * Creates a polling state service that manages poll state and provides methods for state manipulation.
- * @param extendedConfig - Extended poll configuration with computed time producer functions
- * @returns Poll state service with methods for managing poll state and retrieving timing values
+ * Polling state service that manages poll state and provides methods for state manipulation.
  */
-export function createPollService<T>(extendedConfig: ExtendedPollConfig<T>): PollStateService<T> {
-  const state: PollState<T> = { ...defaultState };
+export class PollService<T> {
+  private readonly _config: ExtendedPollConfig<T>;
+  private readonly _state: PollState<T>;
 
-  return {
-    get config(): NormalizedPollConfig<T> {
-      return extendedConfig;
-    },
+  constructor(extendedConfig: ExtendedPollConfig<T>) {
+    this._config = extendedConfig;
+    this._state = { ...defaultState };
+  }
 
-    get state(): PollState<T> {
-      return state;
-    },
+  get config(): Readonly<NormalizedPollConfig<T>> {
+    return this._config;
+  }
 
-    setValue: (value: T): void => {
-      state.value = value;
-    },
+  get state(): Readonly<PollState<T>> {
+    return this._state;
+  }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    setError: (error: any): void => {
-      state.error = error;
-    },
+  setValue(value: T): void {
+    this._state.value = value;
+  }
 
-    resetError: (): void => {
-      state.error = undefined;
-      state.consecutiveRetryCount = 0;
-    },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  setError(error: any): void {
+    this._state.error = error;
+  }
 
-    incrementPoll: (): void => {
-      state.pollCount += 1;
-    },
+  resetError(): void {
+    this._state.error = undefined;
+    this._state.consecutiveRetryCount = 0;
+  }
 
-    incrementRetry: (): void => {
-      state.retryCount += 1;
-      state.consecutiveRetryCount += 1;
-    },
+  incrementPoll(): void {
+    this._state.pollCount += 1;
+  }
 
-    isRetryLimit: (): boolean => {
-      const retryKey: RetryKey = extendedConfig.retry.consecutiveOnly ? 'consecutiveRetryCount' : 'retryCount';
+  incrementRetry(): void {
+    this._state.retryCount += 1;
+    this._state.consecutiveRetryCount += 1;
+  }
 
-      return state[retryKey] > extendedConfig.retry.limit;
-    },
+  isRetryLimit(): boolean {
+    const retryKey: RetryKey = this._config.retry.consecutiveOnly ? 'consecutiveRetryCount' : 'retryCount';
+    return this._state[retryKey] > this._config.retry.limit;
+  }
 
-    getDelayTime: (): number => {
-      return extendedConfig.getDelayTime(state);
-    },
+  getDelayTime(): number {
+    return this._config.getDelayTime(this._state);
+  }
 
-    getRetryTime: (): number => {
-      return extendedConfig.getRetryTime(state);
-    },
-  };
+  getRetryTime(): number {
+    return this._config.getRetryTime(this._state);
+  }
 }

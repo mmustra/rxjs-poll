@@ -1,11 +1,11 @@
 import { take, takeUntil } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
+import { PollService } from '../../src/common/service';
 import * as utils from '../../src/common/utils';
 import { timingToleranceMs } from '../../src/constants/timing.const';
 import { buildRepeatPoller$ } from '../../src/observables/repeat-poller';
-import { NormalizedPollConfig } from '../../src/types/config.type';
-import { PollStateService } from '../../src/types/service.type';
+import { ExtendedPollConfig } from '../../src/types/config.type';
 
 jest.mock('../../src/common/utils', () => ({
   ...jest.requireActual('../../src/common/utils'),
@@ -26,17 +26,14 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-const createMockService = <T>(getDelayTime: () => number): PollStateService<T> => ({
-  config: { pauseWhenHidden: false } as NormalizedPollConfig<T>,
-  state: { value: undefined, error: undefined, pollCount: 0, retryCount: 0, consecutiveRetryCount: 0 },
-  setValue: jest.fn(),
-  setError: jest.fn(),
-  resetError: jest.fn(),
-  incrementPoll: jest.fn(),
-  incrementRetry: jest.fn(),
-  isRetryLimit: jest.fn(() => false),
-  getDelayTime,
-  getRetryTime: jest.fn(() => 1000),
+const createMockConfig = <T>(overrides?: Partial<ExtendedPollConfig<T>>): ExtendedPollConfig<T> => ({
+  type: 'repeat',
+  delay: { strategy: 'constant', time: 1000 },
+  retry: { strategy: 'constant', time: 1000, limit: 3, consecutiveOnly: true },
+  pauseWhenHidden: false,
+  getDelayTime: () => 1000,
+  getRetryTime: () => 1000,
+  ...overrides,
 });
 
 describe('buildRepeatPoller$', () => {
@@ -44,7 +41,7 @@ describe('buildRepeatPoller$', () => {
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('----a|', { a: 'value' });
       const getDelayTime = jest.fn().mockReturnValue(10);
-      const pollService = createMockService<string>(getDelayTime);
+      const pollService = new PollService(createMockConfig<string>({ getDelayTime }));
 
       const result$ = buildRepeatPoller$(source$, pollService).pipe(take(3));
       const expected = '----a 10ms ----a 10ms ----(a|)';
@@ -58,7 +55,7 @@ describe('buildRepeatPoller$', () => {
   it('should handle sources with multiple emissions', () => {
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('--a-b-c|', { a: 'A', b: 'B', c: 'C' });
-      const pollService = createMockService<string>(() => 5);
+      const pollService = new PollService(createMockConfig<string>({ getDelayTime: () => 5 }));
 
       const result$ = buildRepeatPoller$(source$, pollService).pipe(take(6));
       const expected = '--a-b-c 5ms --a-b-(c|)';
@@ -75,7 +72,7 @@ describe('buildRepeatPoller$', () => {
         callCount++;
         return callCount * 5;
       });
-      const pollService = createMockService<string>(getDelayTime);
+      const pollService = new PollService(createMockConfig<string>({ getDelayTime }));
 
       const result$ = buildRepeatPoller$(source$, pollService).pipe(take(3));
       const expected = '--a 5ms --a 10ms --(a|)';
@@ -88,19 +85,7 @@ describe('buildRepeatPoller$', () => {
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('--a|', { a: 'value' });
       const getDelayTime = jest.fn(() => timingToleranceMs / 2);
-
-      const pollService: PollStateService<string> = {
-        config: { pauseWhenHidden: true } as NormalizedPollConfig<string>,
-        state: { value: undefined, error: undefined, pollCount: 0, retryCount: 0, consecutiveRetryCount: 0 },
-        setValue: jest.fn(),
-        setError: jest.fn(),
-        resetError: jest.fn(),
-        incrementPoll: jest.fn(),
-        incrementRetry: jest.fn(),
-        isRetryLimit: jest.fn(() => false),
-        getDelayTime,
-        getRetryTime: jest.fn(() => 1000),
-      };
+      const pollService = new PollService(createMockConfig<string>({ pauseWhenHidden: true, getDelayTime }));
 
       const result$ = buildRepeatPoller$(source$, pollService).pipe(take(1));
 
@@ -113,19 +98,7 @@ describe('buildRepeatPoller$', () => {
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('--a|', { a: 'value' });
       const getDelayTime = jest.fn(() => timingToleranceMs * 2);
-
-      const pollService: PollStateService<string> = {
-        config: { pauseWhenHidden: true } as NormalizedPollConfig<string>,
-        state: { value: undefined, error: undefined, pollCount: 0, retryCount: 0, consecutiveRetryCount: 0 },
-        setValue: jest.fn(),
-        setError: jest.fn(),
-        resetError: jest.fn(),
-        incrementPoll: jest.fn(),
-        incrementRetry: jest.fn(),
-        isRetryLimit: jest.fn(() => false),
-        getDelayTime,
-        getRetryTime: jest.fn(() => 1000),
-      };
+      const pollService = new PollService(createMockConfig<string>({ pauseWhenHidden: true, getDelayTime }));
 
       const result$ = buildRepeatPoller$(source$, pollService).pipe(take(1));
 
@@ -141,19 +114,7 @@ describe('buildRepeatPoller$', () => {
       testScheduler.run(({ cold, expectObservable }) => {
         const source$ = cold('----a|', { a: 'value' });
         const getDelayTime = jest.fn(() => 10);
-
-        const pollService: PollStateService<string> = {
-          config: { pauseWhenHidden: true } as NormalizedPollConfig<string>,
-          state: { value: undefined, error: undefined, pollCount: 0, retryCount: 0, consecutiveRetryCount: 0 },
-          setValue: jest.fn(),
-          setError: jest.fn(),
-          resetError: jest.fn(),
-          incrementPoll: jest.fn(),
-          incrementRetry: jest.fn(),
-          isRetryLimit: jest.fn(() => false),
-          getDelayTime,
-          getRetryTime: jest.fn(() => 1000),
-        };
+        const pollService = new PollService(createMockConfig<string>({ pauseWhenHidden: true, getDelayTime }));
 
         const result$ = buildRepeatPoller$(source$, pollService).pipe(take(3));
         const expected = '----a 10ms ----a 10ms ----(a|)';

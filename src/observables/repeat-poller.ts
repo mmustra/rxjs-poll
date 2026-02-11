@@ -1,8 +1,8 @@
 import { finalize, Observable, Subject, switchMap } from 'rxjs';
 
+import { PollService } from '../common/service';
 import { isBrowser } from '../common/utils';
 import { retryPoll } from '../operators/retry-poll.operator';
-import { PollStateService } from '../types/service.type';
 import { withDocumentVisibility$ } from './document-visibility';
 import { getPauseDelay$ } from './pause-delay';
 import { repeatWith$ } from './repeat-with';
@@ -14,7 +14,7 @@ import { repeatWith$ } from './repeat-with';
  * @param pollService - Poll state service managing configuration and state
  * @returns Observable that emits values from the source with delays between completions
  */
-export function buildRepeatPoller$<T>(source$: Observable<T>, pollService: PollStateService<T>): Observable<T> {
+export function buildRepeatPoller$<T>(source$: Observable<T>, pollService: PollService<T>): Observable<T> {
   if (!isBrowser() || !pollService.config.pauseWhenHidden) {
     return repeatWith$(source$, () => {
       pollService.incrementPoll();

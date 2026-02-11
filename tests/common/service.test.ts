@@ -1,4 +1,4 @@
-import { createPollService } from '../../src/common/service';
+import { PollService } from '../../src/common/service';
 import { ExtendedPollConfig } from '../../src/types/config.type';
 
 const createMockConfig = <T>(overrides?: Partial<ExtendedPollConfig<T>>): ExtendedPollConfig<T> => ({
@@ -11,11 +11,11 @@ const createMockConfig = <T>(overrides?: Partial<ExtendedPollConfig<T>>): Extend
   ...overrides,
 });
 
-describe('createPollService', () => {
+describe('PollService', () => {
   describe('initialization', () => {
     it('should create service with initial state', () => {
       const config = createMockConfig();
-      const service = createPollService(config);
+      const service = new PollService(config);
 
       expect(service.state).toEqual({
         value: undefined,
@@ -28,7 +28,7 @@ describe('createPollService', () => {
 
     it('should expose config via getter', () => {
       const config = createMockConfig();
-      const service = createPollService(config);
+      const service = new PollService(config);
 
       expect(service.config).toBe(config);
     });
@@ -36,7 +36,7 @@ describe('createPollService', () => {
 
   describe('setValue', () => {
     it('should update state value', () => {
-      const service = createPollService(createMockConfig<string>());
+      const service = new PollService(createMockConfig<string>());
 
       service.setValue('test-value');
 
@@ -45,7 +45,7 @@ describe('createPollService', () => {
 
     it('should support generic types', () => {
       type TestData = { id: number; name: string };
-      const service = createPollService(createMockConfig<TestData>());
+      const service = new PollService(createMockConfig<TestData>());
 
       service.setValue({ id: 1, name: 'test' });
 
@@ -55,7 +55,7 @@ describe('createPollService', () => {
 
   describe('setError', () => {
     it('should update state error', () => {
-      const service = createPollService(createMockConfig());
+      const service = new PollService(createMockConfig());
       const error = new Error('test error');
 
       service.setError(error);
@@ -66,7 +66,7 @@ describe('createPollService', () => {
 
   describe('resetError', () => {
     it('should clear error and reset consecutiveRetryCount', () => {
-      const service = createPollService(createMockConfig());
+      const service = new PollService(createMockConfig());
 
       service.setError(new Error('test'));
       service.incrementRetry(); // Increments both retry counts
@@ -81,7 +81,7 @@ describe('createPollService', () => {
 
   describe('incrementPoll', () => {
     it('should increment poll count', () => {
-      const service = createPollService(createMockConfig());
+      const service = new PollService(createMockConfig());
 
       service.incrementPoll();
 
@@ -91,7 +91,7 @@ describe('createPollService', () => {
 
   describe('incrementRetry', () => {
     it('should increment both retry counts', () => {
-      const service = createPollService(createMockConfig());
+      const service = new PollService(createMockConfig());
 
       service.incrementRetry();
 
@@ -105,7 +105,7 @@ describe('createPollService', () => {
       const config = createMockConfig({
         retry: { strategy: 'constant', time: 1000, limit: 3, consecutiveOnly: false },
       });
-      const service = createPollService(config);
+      const service = new PollService(config);
 
       service.incrementRetry();
       const result = service.isRetryLimit();
@@ -119,7 +119,7 @@ describe('createPollService', () => {
       const config = createMockConfig({
         retry: { strategy: 'constant', time: 1000, limit: 2, consecutiveOnly: false },
       });
-      const service = createPollService(config);
+      const service = new PollService(config);
 
       service.incrementRetry(); // retryCount: 1
       service.incrementRetry(); // retryCount: 2
@@ -132,7 +132,7 @@ describe('createPollService', () => {
 
     it('should return true when consecutiveRetryCount exceeds limit (consecutiveOnly: true)', () => {
       const config = createMockConfig({ retry: { strategy: 'constant', time: 1000, limit: 2, consecutiveOnly: true } });
-      const service = createPollService(config);
+      const service = new PollService(config);
 
       service.incrementRetry(); // consecutiveRetryCount: 1
       service.incrementRetry(); // consecutiveRetryCount: 2
@@ -148,7 +148,7 @@ describe('createPollService', () => {
     it('should call config.getDelayTime with current state', () => {
       const getDelayTime = jest.fn(() => 1500);
       const config = createMockConfig({ getDelayTime });
-      const service = createPollService(config);
+      const service = new PollService(config);
 
       const result = service.getDelayTime();
 
@@ -159,7 +159,7 @@ describe('createPollService', () => {
     it('should pass updated state to config.getDelayTime', () => {
       const getDelayTime = jest.fn((state) => state.pollCount * 100);
       const config = createMockConfig({ getDelayTime });
-      const service = createPollService(config);
+      const service = new PollService(config);
 
       service.incrementPoll(); // pollCount: 1
       const result1 = service.getDelayTime();
@@ -176,7 +176,7 @@ describe('createPollService', () => {
     it('should call config.getRetryTime without modifying state', () => {
       const getRetryTime = jest.fn(() => 2500);
       const config = createMockConfig({ getRetryTime });
-      const service = createPollService(config);
+      const service = new PollService(config);
 
       const result = service.getRetryTime();
 
@@ -189,7 +189,7 @@ describe('createPollService', () => {
     it('should pass current state to config.getRetryTime', () => {
       const getRetryTime = jest.fn((state) => state.retryCount * 500);
       const config = createMockConfig({ getRetryTime });
-      const service = createPollService(config);
+      const service = new PollService(config);
 
       service.incrementRetry(); // retryCount: 1
       service.incrementRetry(); // retryCount: 2

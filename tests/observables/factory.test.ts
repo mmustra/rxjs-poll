@@ -2,7 +2,7 @@ import { switchMap, take } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
 import { extendConfig } from '../../src/common/config';
-import { createPollService } from '../../src/common/service';
+import { PollService } from '../../src/common/service';
 import { createPoller$ } from '../../src/observables/factory';
 
 let testScheduler: TestScheduler;
@@ -17,7 +17,7 @@ beforeEach(() => {
 describe('createPoller$', () => {
   it('should handle repeat type', () => {
     const config = extendConfig<string>({ type: 'repeat', delay: { strategy: 'constant', time: 10 } });
-    const pollService = createPollService(config);
+    const pollService = new PollService(config);
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('--a|', { a: 'value' });
@@ -31,7 +31,7 @@ describe('createPoller$', () => {
 
   it('should handle interval type', () => {
     const config = extendConfig<string>({ type: 'interval', delay: { strategy: 'constant', time: 10 } });
-    const pollService = createPollService(config);
+    const pollService = new PollService(config);
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('--a|', { a: 'value' });
@@ -45,7 +45,7 @@ describe('createPoller$', () => {
 
   it('should handle interval type to interrupt incomplete sources', () => {
     const config = extendConfig<string>({ type: 'interval', delay: { strategy: 'constant', time: 10 } });
-    const pollService = createPollService(config);
+    const pollService = new PollService(config);
     let subscriptionCount = 0;
 
     testScheduler.run(({ cold, expectObservable }) => {

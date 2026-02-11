@@ -1,8 +1,8 @@
 import { TestScheduler } from 'rxjs/testing';
 
+import { PollService } from '../../src/common/service';
 import { retryPoll } from '../../src/operators/retry-poll.operator';
-import { NormalizedPollConfig } from '../../src/types/config.type';
-import { PollStateService } from '../../src/types/service.type';
+import { ExtendedPollConfig } from '../../src/types/config.type';
 
 let testScheduler: TestScheduler;
 
@@ -13,25 +13,21 @@ beforeEach(() => {
   jest.clearAllMocks();
 });
 
-const createMockService = <T>(isRetryLimit: () => boolean, getRetryTime: () => number): PollStateService<T> => ({
-  config: { pauseWhenHidden: false } as NormalizedPollConfig<T>,
-  state: { value: undefined, error: undefined, pollCount: 0, retryCount: 0, consecutiveRetryCount: 0 },
-  setValue: jest.fn(),
-  setError: jest.fn(),
-  resetError: jest.fn(),
-  isRetryLimit,
-  getDelayTime: jest.fn(() => 1000),
-  getRetryTime,
-  incrementPoll: jest.fn(),
-  incrementRetry: jest.fn(),
+const createMockConfig = <T>(overrides?: Partial<ExtendedPollConfig<T>>): ExtendedPollConfig<T> => ({
+  type: 'repeat',
+  delay: { strategy: 'constant', time: 1000 },
+  retry: { strategy: 'constant', time: 1000, limit: 10, consecutiveOnly: true },
+  pauseWhenHidden: false,
+  getDelayTime: () => 1000,
+  getRetryTime: () => 100,
+  ...overrides,
 });
 
 describe('retryPoll', () => {
   it('should emit value and reset error on success', () => {
-    const pollService = createMockService<string>(
-      () => false,
-      () => 100
-    );
+    const config = createMockConfig<string>({ getRetryTime: () => 100 });
+    const pollService = new PollService(config);
+    const resetErrorSpy = jest.spyOn(pollService, 'resetError');
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('--a|');
@@ -42,13 +38,16 @@ describe('retryPoll', () => {
       expectObservable(result$).toBe(expected, { a: 'a' });
     });
 
-    expect(pollService.resetError).toHaveBeenCalled();
+    expect(resetErrorSpy).toHaveBeenCalled();
   });
 
   it('should throw error immediately when limit is reached', () => {
-    const isRetryLimit = jest.fn().mockReturnValue(true);
     const getRetryTime = jest.fn();
-    const pollService = createMockService<string>(isRetryLimit, getRetryTime);
+    const config = createMockConfig<string>({
+      retry: { strategy: 'constant', time: 1000, limit: 0, consecutiveOnly: true },
+      getRetryTime,
+    });
+    const pollService = new PollService(config);
 
     testScheduler.run(({ cold, expectObservable }) => {
       const error = new Error('test error');
@@ -64,10 +63,12 @@ describe('retryPoll', () => {
   });
 
   it('should retry with delay when error occurs and limit not reached', () => {
-    let callCount = 0;
-    const isRetryLimit = jest.fn(() => ++callCount === 2);
     const getRetryTime = jest.fn().mockReturnValue(100);
-    const pollService = createMockService<string>(isRetryLimit, getRetryTime);
+    const config = createMockConfig<string>({
+      retry: { strategy: 'constant', time: 1000, limit: 1, consecutiveOnly: true },
+      getRetryTime,
+    });
+    const pollService = new PollService(config);
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('--#', undefined, new Error('test error'));
@@ -78,7 +79,6 @@ describe('retryPoll', () => {
       expectObservable(result$).toBe(expected, undefined, new Error('test error'));
     });
 
-    expect(isRetryLimit).toHaveBeenCalledTimes(2);
     expect(getRetryTime).toHaveBeenCalledTimes(1);
   });
 });
