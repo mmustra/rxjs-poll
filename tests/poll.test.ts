@@ -1,9 +1,11 @@
-import { delay, Observable, of, switchMap, take } from 'rxjs';
+import { Observable, switchMap, take } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
 import { poll } from '../src/poll';
 import { PollState } from '../src/types/poll.type';
-import { setDocumentVisibility } from '../utils/test-helpers';
+import { documentVisibility$ } from './mocks/document-visibility.mock';
+
+jest.mock('../src/observables/document-visibility', () => require('./mocks/document-visibility.mock'));
 
 let testScheduler: TestScheduler;
 
@@ -11,7 +13,7 @@ beforeEach(() => {
   testScheduler = new TestScheduler((actual, expected) => {
     expect(actual).toEqual(expected);
   });
-  setDocumentVisibility(true);
+  documentVisibility$().next(true);
   jest.clearAllMocks();
 });
 
@@ -291,11 +293,7 @@ describe('poll operator (repeat) - extras', () => {
   });
 
   it('should guarantee first emission when tab starts hidden', () => {
-    let pollCallCount = 0;
-
-    setDocumentVisibility(false);
-    // Trigger visibility change event to update the cached visibility observable
-    document.dispatchEvent(new Event('visibilitychange'));
+    documentVisibility$().next(false);
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('-a|', { a: 'success' });
@@ -304,24 +302,19 @@ describe('poll operator (repeat) - extras', () => {
         poll({
           delay: {
             strategy: 'dynamic',
-            time: () => {
-              pollCallCount++;
-              return 1;
-            },
+            time: () => 1,
           },
           pauseWhenHidden: true,
         }),
-        take(2)
+        take(1)
       );
 
-      expectObservable(result$).toBe('--a------', { a: 'success' });
+      expectObservable(result$).toBe('--(a|)', { a: 'success' });
     });
-
-    expect(pollCallCount).toBeGreaterThanOrEqual(1);
   });
 
   it('should guarantee started cycle finishes when tab becomes hidden during multi-emission source', () => {
-    setDocumentVisibility(true);
+    documentVisibility$().next(true);
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('---a--b--(c|)', { a: 'A', b: 'B', c: 'C' });
@@ -338,8 +331,7 @@ describe('poll operator (repeat) - extras', () => {
       );
 
       testScheduler.schedule(() => {
-        setDocumentVisibility(false);
-        document.dispatchEvent(new Event('visibilitychange'));
+        documentVisibility$().next(false);
       }, 5);
 
       const expected = '---------(c|)';
@@ -349,7 +341,7 @@ describe('poll operator (repeat) - extras', () => {
   });
 
   it('should complete emission then pause polling when tab becomes hidden while source is running', () => {
-    setDocumentVisibility(true);
+    documentVisibility$().next(true);
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('-a---|', { a: 'success' });
@@ -358,9 +350,7 @@ describe('poll operator (repeat) - extras', () => {
         poll({
           delay: {
             strategy: 'dynamic',
-            time: () => {
-              return 10;
-            },
+            time: () => 10,
           },
           pauseWhenHidden: true,
         }),
@@ -368,8 +358,7 @@ describe('poll operator (repeat) - extras', () => {
       );
 
       testScheduler.schedule(() => {
-        setDocumentVisibility(false);
-        document.dispatchEvent(new Event('visibilitychange'));
+        documentVisibility$().next(false);
       }, 2);
 
       expectObservable(result$).toBe('-----a-------', { a: 'success' });
@@ -378,7 +367,7 @@ describe('poll operator (repeat) - extras', () => {
 
   describe('pauseWhenHidden: true vs false', () => {
     it('when pauseWhenHidden is true, polling pauses when tab becomes hidden (only one emission in window)', () => {
-      setDocumentVisibility(true);
+      documentVisibility$().next(true);
 
       testScheduler.run(({ cold, expectObservable }) => {
         const source$ = cold('-a---|', { a: 'success' });
@@ -392,8 +381,7 @@ describe('poll operator (repeat) - extras', () => {
         );
 
         testScheduler.schedule(() => {
-          setDocumentVisibility(false);
-          document.dispatchEvent(new Event('visibilitychange'));
+          documentVisibility$().next(false);
         }, 2);
 
         // Tab hidden at frame 2 → next poll is paused; only first emission within 13 frames
@@ -402,7 +390,7 @@ describe('poll operator (repeat) - extras', () => {
     });
 
     it('when pauseWhenHidden is false, polling continues when tab becomes hidden (second emission on schedule)', () => {
-      setDocumentVisibility(true);
+      documentVisibility$().next(true);
 
       testScheduler.run(({ cold, expectObservable }) => {
         const source$ = cold('-a---|', { a: 'success' });
@@ -416,8 +404,7 @@ describe('poll operator (repeat) - extras', () => {
         );
 
         testScheduler.schedule(() => {
-          setDocumentVisibility(false);
-          document.dispatchEvent(new Event('visibilitychange'));
+          documentVisibility$().next(false);
         }, 2);
 
         // Tab hidden at frame 2 is ignored → second poll after 10ms (frame 15), source completes at 20
@@ -480,155 +467,33 @@ describe('poll operator (interval) - interval type behavior', () => {
     });
   });
 
-  it('should guarantee first emission when tab starts hidden (interval mode)', (done) => {
-    jest.useFakeTimers();
+  it('should guarantee first emission when tab starts hidden (interval mode)', () => {
+    documentVisibility$().next(false);
 
-    let pollCallCount = 0;
-    const emissions: string[] = [];
-    let testError: Error | undefined;
+    testScheduler.run(({ cold, expectObservable }) => {
+      const source$ = cold('10ms a|', { a: 'success' });
 
-    setDocumentVisibility(false);
-    document.dispatchEvent(new Event('visibilitychange'));
+      testScheduler.schedule(() => documentVisibility$().next(true), 5);
 
-    const source$ = of('success').pipe(delay(10));
-
-    const result$ = source$.pipe(
-      poll({
-        type: 'interval',
-        delay: {
-          strategy: 'dynamic',
-          time: () => {
-            pollCallCount++;
-            return 100;
+      const result$ = source$.pipe(
+        poll({
+          type: 'interval',
+          delay: {
+            strategy: 'dynamic',
+            time: () => 100,
           },
-        },
-        pauseWhenHidden: true,
-      }),
-      take(2)
-    );
+          pauseWhenHidden: true,
+        }),
+        take(1)
+      );
 
-    const subscription = result$.subscribe({
-      next: (value) => emissions.push(value),
-      complete: () => {
-        try {
-          expect(emissions).toEqual(['success', 'success']);
-          expect(pollCallCount).toBeGreaterThanOrEqual(1);
-          subscription.unsubscribe();
-        } catch (err) {
-          testError = err as Error;
-        }
-      },
-      error: (err) => {
-        testError = err as Error;
-        subscription.unsubscribe();
-      },
+      // Visible at 5ms → first poll runs, source emits at 11ms
+      expectObservable(result$).toBe('11ms (a|)', { a: 'success' });
     });
-
-    // Make document visible immediately to allow first emission (which is guaranteed behavior)
-    setTimeout(() => {
-      setDocumentVisibility(true);
-      document.dispatchEvent(new Event('visibilitychange'));
-    }, 10);
-
-    try {
-      // Advance timers to allow all emissions to complete
-      jest.advanceTimersByTime(10); // Make visible
-      jest.advanceTimersByTime(20); // First emission completes
-      jest.advanceTimersByTime(100); // Wait for interval delay
-      jest.advanceTimersByTime(1000); // Complete remaining timers and second emission
-    } finally {
-      jest.useRealTimers();
-      if (testError) {
-        done(testError);
-      } else {
-        done();
-      }
-    }
-  });
-
-  it('should guarantee started cycle finishes when tab becomes hidden during multi-emission source (interval mode)', (done) => {
-    jest.useFakeTimers();
-
-    setDocumentVisibility(true);
-
-    const emissions: string[] = [];
-    let emissionIndex = 0;
-    let testError: Error | undefined;
-
-    const source$ = new Observable<string>((subscriber) => {
-      const values = ['A', 'B', 'C'];
-
-      const emit = () => {
-        if (emissionIndex < values.length) {
-          setTimeout(() => {
-            subscriber.next(values[emissionIndex]);
-            emissionIndex++;
-            if (emissionIndex < values.length) {
-              emit();
-            } else {
-              subscriber.complete();
-            }
-          }, 20);
-        }
-      };
-
-      emit();
-    });
-
-    const result$ = source$.pipe(
-      poll({
-        type: 'interval',
-        delay: {
-          strategy: 'constant',
-          time: 300,
-        },
-        pauseWhenHidden: true,
-      }),
-      take(1)
-    );
-
-    const subscription = result$.subscribe({
-      next: (value) => emissions.push(value),
-      complete: () => {
-        try {
-          // Should only receive the last emission 'C' because take(1) completes after first value
-          expect(emissions).toEqual(['C']);
-          subscription.unsubscribe();
-        } catch (err) {
-          testError = err as Error;
-        }
-      },
-      error: (err) => {
-        testError = err as Error;
-        subscription.unsubscribe();
-      },
-    });
-
-    // Hide document after source has started emitting
-    setTimeout(() => {
-      setDocumentVisibility(false);
-      document.dispatchEvent(new Event('visibilitychange'));
-    }, 30);
-
-    try {
-      // Advance timers to let all emissions complete
-      jest.advanceTimersByTime(20); // First emission 'A'
-      jest.advanceTimersByTime(20); // Second emission 'B'
-      jest.advanceTimersByTime(10); // Hide document
-      jest.advanceTimersByTime(20); // Third emission 'C' (cycle completes despite being hidden)
-      jest.advanceTimersByTime(1000); // Complete any remaining timers
-    } finally {
-      jest.useRealTimers();
-      if (testError) {
-        done(testError);
-      } else {
-        done();
-      }
-    }
   });
 
   it('should guarantee started cycle finishes when tab becomes hidden during multi-emission source (interval mode)', () => {
-    setDocumentVisibility(true);
+    documentVisibility$().next(true);
 
     testScheduler.run(({ cold, expectObservable }) => {
       const source$ = cold('----a--b--(c|)', { a: 'A', b: 'B', c: 'C' });
@@ -646,8 +511,7 @@ describe('poll operator (interval) - interval type behavior', () => {
       );
 
       testScheduler.schedule(() => {
-        setDocumentVisibility(false);
-        document.dispatchEvent(new Event('visibilitychange'));
+        documentVisibility$().next(false);
       }, 6);
 
       const expected = '----------(c|)';

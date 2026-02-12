@@ -77,13 +77,7 @@ describe('buildIntervalPoller$', () => {
         createMockConfig<string>({ pauseWhenHidden: true, getDelayTime, getRetryTime })
       );
 
-      const result$ = buildIntervalPoller$(source$, pollService);
-
-      result$.subscribe({
-        error: () => {
-          // ignore terminal error, we're only interested in retry behaviour
-        },
-      });
+      buildIntervalPoller$(source$, pollService).subscribe();
 
       testScheduler.flush();
 

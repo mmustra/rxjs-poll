@@ -1,8 +1,7 @@
-import { EMPTY, of, switchMap, take, timer } from 'rxjs';
+import { of, switchMap, take } from 'rxjs';
 import { TestScheduler } from 'rxjs/testing';
 
-import { getDocumentVisibility$ } from '../../src/observables/document-visibility';
-import { setDocumentVisibility } from '../../utils/test-helpers';
+import { getDocumentVisibility$, withDocumentVisibility$ } from '../../src/observables/document-visibility';
 
 let testScheduler: TestScheduler;
 
@@ -10,53 +9,53 @@ beforeEach(() => {
   testScheduler = new TestScheduler((actual, expected) => {
     expect(actual).toEqual(expected);
   });
-  setDocumentVisibility(true);
   jest.clearAllMocks();
 });
 
-describe('visibilityState$', () => {
-  it('should run when on active tab', async () => {
+describe('getDocumentVisibility$', () => {
+  it('should return observable that reflects document when used with real document', () => {
     testScheduler.run(({ expectObservable }) => {
       const source$ = getDocumentVisibility$().pipe(
         switchMap((isVisible) => (isVisible ? of('a') : of('b'))),
         take(1)
       );
-      const expected = '(a|)';
 
-      expectObservable(source$).toBe(expected);
+      expectObservable(source$).toBe('(a|)', { a: 'a' });
+    });
+  });
+});
+
+describe('withDocumentVisibility$', () => {
+  it('should run when visibility is true', () => {
+    testScheduler.run(({ cold, expectObservable }) => {
+      const visibility$ = of(true);
+      const poller$ = cold('a|', { a: 'value' });
+      const pauser$ = cold('--x');
+      const result$ = withDocumentVisibility$(poller$, pauser$, visibility$).pipe(take(1));
+
+      expectObservable(result$).toBe('(a|)', { a: 'value' });
     });
   });
 
-  it('should pause when on other tab', async () => {
-    setDocumentVisibility(false);
-    document.dispatchEvent(new Event('visibilitychange'));
+  it('should pause when visibility is false (takeUntil pauser$)', () => {
+    const visibility$ = of(false);
+    testScheduler.run(({ cold, expectObservable }) => {
+      const poller$ = cold('a-b-c|', { a: 'A', b: 'B', c: 'C' });
+      const pauser$ = cold('---x');
+      const result$ = withDocumentVisibility$(poller$, pauser$, visibility$);
 
-    testScheduler.run(({ expectObservable }) => {
-      const source$ = getDocumentVisibility$().pipe(
-        switchMap((isVisible) => (isVisible ? of('a') : of('b'))),
-        take(1)
-      );
-      const expected = '(b|)';
-
-      expectObservable(source$).toBe(expected);
+      expectObservable(result$).toBe('a-b|', { a: 'A', b: 'B' });
     });
   });
 
-  it('should run/pause when switching between tabs', () => {
-    setDocumentVisibility(false);
-    document.dispatchEvent(new Event('visibilitychange'));
+  it('should resume new run when visibility switches from false to true', () => {
+    testScheduler.run(({ cold, expectObservable }) => {
+      const visibility$ = cold('f-t', { f: false, t: true });
+      const poller$ = cold('a-b-c|', { a: 'A', b: 'B', c: 'C' });
+      const pauser$ = cold('x');
+      const result$ = withDocumentVisibility$(poller$, pauser$, visibility$).pipe(take(2));
 
-    testScheduler.run(({ expectObservable }) => {
-      const source$ = getDocumentVisibility$().pipe(switchMap((isVisible) => (isVisible ? of('a') : EMPTY)));
-
-      // Schedule visibility change at frame 4
-      timer(4).subscribe(() => {
-        setDocumentVisibility(true);
-        document.dispatchEvent(new Event('visibilitychange'));
-      });
-
-      const expected = '----(a|)';
-      expectObservable(source$.pipe(take(1))).toBe(expected);
+      expectObservable(result$).toBe('a-(a|)', { a: 'A' });
     });
   });
 });

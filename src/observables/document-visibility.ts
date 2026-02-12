@@ -19,10 +19,15 @@ import { isDocumentVisible } from '../common/utils';
  * Guarantees every started cycle finishes before pausing, then pauses/resumes based on document visibility.
  * @param poller$ - The polling observable to wrap
  * @param pauser$ - Observable that determines when to pause (after cycle completes)
+ * @param visibilitySource$ - Optional source for the visibility stream
  * @returns Observable that emits values from poller$ with visibility-aware pausing
  */
-export function withDocumentVisibility$<T>(poller$: Observable<T>, pauser$: Observable<unknown>): Observable<T> {
-  const visibility$ = getDocumentVisibility$();
+export function withDocumentVisibility$<T>(
+  poller$: Observable<T>,
+  pauser$: Observable<unknown>,
+  visibilitySource$?: Observable<boolean>
+): Observable<T> {
+  const visibility$ = visibilitySource$ ?? getDocumentVisibility$();
   const pause$ = visibility$.pipe(switchMap((isVisible) => (isVisible ? NEVER : pauser$)));
   let emissionStarted = true;
 
