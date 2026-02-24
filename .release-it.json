@@ -1,6 +1,6 @@
 {
   "git": {
-    "requireBranch": "main",
+    "requireBranch": "v2",
     "commitMessage": "chore: release v${version}",
     "publish": true,
     "requireCommits": true,
@@ -9,10 +9,11 @@
   "github": {
     "release": true
   },
-  "npm": { "publishArgs": ["--access public", "--provenance"] },
+  "npm": { "publishArgs": ["--access public", "--provenance", "--tag v2-lts"] },
   "hooks": {
-    "before:init": ["git pull origin main", "npm run lint", "npm run test"],
-    "before:bump": ["npm run build", "npm run test:modules"]
+    "before:init": ["git pull origin v2", "npm run lint", "npm run test"],
+    "before:bump": ["npm run build", "npm run test:modules"],
+    "after:github:release": "bash scripts/gh-latest-release-tag.sh ${version}"
   },
   "plugins": {
     "@release-it/conventional-changelog": {
