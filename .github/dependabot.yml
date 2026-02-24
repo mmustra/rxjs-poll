@@ -10,6 +10,17 @@ updates:
       include: 'scope'
   - package-ecosystem: 'npm'
     directory: '/'
+    target-branch: 'v2'
+    schedule:
+      interval: 'weekly'
+    commit-message:
+      prefix: 'fix'
+      prefix-development: 'chore'
+      include: 'scope'
+    # v2 branch: Disable version updates, only security updates via Dependabot rules
+    open-pull-requests-limit: 0
+  - package-ecosystem: 'npm'
+    directory: '/'
     target-branch: 'v1'
     schedule:
       interval: 'weekly'
