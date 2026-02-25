@@ -1,8 +1,9 @@
 import { extendConfig } from '../../src/common/config';
 import { defaultConfig } from '../../src/constants/config.const';
+import { defaultNotifier$ } from '../../src/constants/notifier.const';
 import { strategyType } from '../../src/constants/strategies.const';
 import { PollConfig } from '../../src/types/config.type';
-import { PollState } from '../../src/types/poll.type';
+import { createMockState } from '../_mocks/state.mock';
 
 it('should extend config with default values when nothing is provided', () => {
   const result = extendConfig();
@@ -27,7 +28,7 @@ it('should extend config with provided values', () => {
       limit: 5,
       consecutiveOnly: false,
     },
-    pauseWhenHidden: false,
+    pause: { notifier: defaultNotifier$, whenHidden: false },
   };
 
   const result = extendConfig(config);
@@ -39,7 +40,8 @@ it('should extend config with provided values', () => {
   expect(result.retry.strategy).toBe(strategyType.LINEAR);
   expect(result.retry.limit).toBe(5);
   expect(result.retry.consecutiveOnly).toBe(false);
-  expect(result.pauseWhenHidden).toBe(false);
+  expect(result.pause.notifier).toBe(defaultNotifier$);
+  expect(result.pause.whenHidden).toBe(false);
   expect(result.getDelayTime).toBeInstanceOf(Function);
   expect(result.getRetryTime).toBeInstanceOf(Function);
 });
@@ -92,7 +94,7 @@ it('should not mutate input configuration object', () => {
       limit: 5,
       consecutiveOnly: false,
     },
-    pauseWhenHidden: false,
+    pause: { whenHidden: false },
   };
 
   const configCopy = JSON.parse(JSON.stringify(originalConfig));
@@ -102,13 +104,7 @@ it('should not mutate input configuration object', () => {
 });
 
 it('should not mutate internal state from dynamic functions', () => {
-  const mockState: PollState<unknown> = {
-    pollCount: 0,
-    retryCount: 0,
-    consecutiveRetryCount: 0,
-    value: undefined,
-    error: undefined,
-  };
+  const mockState = createMockState();
   const stateCopy = { ...mockState };
 
   const config = extendConfig({

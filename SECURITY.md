@@ -4,11 +4,12 @@
 
 We actively support the following versions with security updates:
 
-| Version | Supported                  |
-| ------- | -------------------------- |
-| 2.x.x   | ✅                         |
-| 1.x.x   | ✅ (security updates only) |
-| < 1.0.0 | ❌                         |
+| Version | Supported                         |
+| ------- | --------------------------------- |
+| 3.x.x   | ✅ (current)                      |
+| 2.x.x   | ✅ (security and critical fixes)  |
+| 1.x.x   | ✅ (security updates only)        |
+| < 1.0.0 | ❌                                |
 
 ## Reporting a Vulnerability
 

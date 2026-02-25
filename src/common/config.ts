@@ -1,4 +1,5 @@
 import { defaultConfig } from '../constants/config.const';
+import { pollMode } from '../constants/poll.const';
 import { ExtendedPollConfig, NormalizedPollConfig, PollConfig } from '../types/config.type';
 import { PollMode, PollTimeProducer } from '../types/poll.type';
 import { Nil } from '../types/utils.type';
@@ -10,8 +11,8 @@ export function extendConfig<T>(config?: PollConfig<T> | Nil): ExtendedPollConfi
 
   return {
     ...normalizedConfig,
-    getDelayTime: getTimeProducer('delay', normalizedConfig),
-    getRetryTime: getTimeProducer('retry', normalizedConfig),
+    getDelayTime: getTimeProducer(pollMode.DELAY, normalizedConfig),
+    getRetryTime: getTimeProducer(pollMode.RETRY, normalizedConfig),
   };
 }
 
@@ -44,6 +45,9 @@ function normalizeConfig<T>(config: PollConfig<T> | Nil): NormalizedPollConfig<T
       limit: normalizeNumber(config?.retry?.limit, defaultConfig.retry.limit, false),
       consecutiveOnly: config?.retry?.consecutiveOnly ?? defaultConfig.retry.consecutiveOnly,
     },
-    pauseWhenHidden: config?.pauseWhenHidden ?? defaultConfig.pauseWhenHidden,
+    pause: {
+      notifier: config?.pause?.notifier ?? defaultConfig.pause.notifier,
+      whenHidden: config?.pause?.whenHidden ?? defaultConfig.pause.whenHidden,
+    },
   };
 }

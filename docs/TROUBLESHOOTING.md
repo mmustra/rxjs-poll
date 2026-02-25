@@ -168,25 +168,56 @@ poll({ retry: { limit: 3 } }); // consecutiveOnly defaults to true
 
 ## Browser-Specific Issues
 
+### Want to Start Paused?
+
+**Problem — Polling starts immediately but you want to wait until the user (or another signal) resumes**
+
+If you pass an `Observable<boolean>` as `pause.notifier` that never emits, polling starts (same as resume). This is by design so that "no signal" does not block polling.
+
+**Solution:** Use an observable that emits `true` initially, then emit `false` when you want to start polling:
+
+```typescript
+import { BehaviorSubject } from 'rxjs';
+import { takeWhile } from 'rxjs';
+import { poll } from 'rxjs-poll';
+
+const pause$ = new BehaviorSubject(true); // start paused
+
+request$
+  .pipe(
+    poll({
+      pause: {
+        notifier: pause$,
+        whenHidden: false,
+      },
+    }),
+    takeWhile(({ status }) => status !== 'done', true)
+  )
+  .subscribe(console.log);
+
+// Later: start polling
+pause$.next(false);
+```
+
 ### Polling Continues When Tab is Hidden
 
-**Problem 1 — pauseWhenHidden is disabled**
+**Problem 1 — pause.whenHidden is disabled**
 
 ```typescript
 // ❌ Polling continues in background
-poll({ pauseWhenHidden: false });
+poll({ pause: { whenHidden: false } });
 ```
 
 **Solution:**
 
 ```typescript
 // ✅ Enable pause when hidden (default)
-poll({ pauseWhenHidden: true }); // or just poll()
+poll({ pause: { whenHidden: true } }); // or just poll()
 ```
 
 **Problem 2 — Running in Node.js environment**
 
-**Explanation:** `pauseWhenHidden` only works in browser environments (requires `document.hidden` API).
+**Explanation:** `pause.whenHidden` only works in browser environments (requires `document.hidden` API).
 
 ## Performance Issues
 
@@ -288,5 +319,5 @@ poll<MyData>({
 If you're experiencing issues not covered here:
 
 1. Check the [README](../README.md) for basic usage
-2. Review the [V2 Changes](./V2_CHANGES.md) if upgrading
+2. Review the [V2](./V2_CHANGES.md) or [V3](./V3_CHANGES.md) Changes if upgrading
 3. [Open an issue](https://github.com/mmustra/rxjs-poll/issues) on GitHub

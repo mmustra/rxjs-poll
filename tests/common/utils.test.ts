@@ -1,11 +1,4 @@
-import {
-  isBrowser,
-  isDocumentVisible,
-  isFunction,
-  normalizeNumber,
-  pickNumber,
-  randomNumber,
-} from '../../src/common/utils';
+import { isBrowser, isFunction, normalizeNumber, pickNumber, randomNumber } from '../../src/common/utils';
 
 describe('normalizeNumber', () => {
   it('should handle basic number inputs', () => {
@@ -159,25 +152,5 @@ describe('isFunction', () => {
 describe('isBrowser', () => {
   it('should return true when window and document are available', () => {
     expect(isBrowser()).toBe(true);
-  });
-});
-
-describe('isDocumentVisible', () => {
-  it('should return true when document is visible', () => {
-    Object.defineProperty(document, 'hidden', {
-      value: false,
-      configurable: true,
-    });
-
-    expect(isDocumentVisible()).toBe(true);
-  });
-
-  it('should return false when document is hidden', () => {
-    Object.defineProperty(document, 'hidden', {
-      value: true,
-      configurable: true,
-    });
-
-    expect(isDocumentVisible()).toBe(false);
   });
 });

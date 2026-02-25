@@ -1,6 +1,6 @@
 # V2 Changes
 
-**Version 2** ([source](https://github.com/mmustra/rxjs-poll)) introduces an API focused on strategy-based configuration with improved type safety and clearer separation between polling delays and retry behavior.
+**Version 2** ([source](https://github.com/mmustra/rxjs-poll/tree/v2)) introduces an API focused on strategy-based configuration with improved type safety and clearer separation between polling delays and retry behavior.
 
 **Version 1** ([source](https://github.com/mmustra/rxjs-poll/tree/v1)) will continue to receive bug fixes and security updates.
 

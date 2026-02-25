@@ -37,7 +37,3 @@ export function isFunction(value: unknown): value is (...args: any[]) => any {
 export function isBrowser(): boolean {
   return typeof globalThis.window !== 'undefined' && typeof globalThis.window.document !== 'undefined';
 }
-
-export function isDocumentVisible(): boolean {
-  return !document.hidden;
-}

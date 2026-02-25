@@ -1,3 +1,5 @@
+import { Observable } from 'rxjs';
+
 import { PollTimeProducer, PollType } from './poll.type';
 import { DynamicFunction, StrategyType } from './strategies.type';
 import { MinMax, Nil } from './utils.type';
@@ -5,7 +7,7 @@ import { MinMax, Nil } from './utils.type';
 /**
  * Configuration object for the poll operator
  */
-export type PollConfig<T> = {
+export interface PollConfig<T> {
   /**
    * Defines the polling behavior:
    * - "repeat": Polls after current source completes
@@ -22,14 +24,10 @@ export type PollConfig<T> = {
    */
   retry?: PollRetryConfig<T> | Nil;
   /**
-   * [Browser only] Controls polling behavior when page isn't visible
-   * - "true": Pause polling when tab isn't active, and resume on active
-   * - "false": Poll even when tab isn't focused
-   * @default true
-   * @note Every started cycle (poll or retry) finishes before pausing
+   * Configuration for pause behavior
    */
-  pauseWhenHidden?: boolean | Nil;
-};
+  pause?: PollPauseConfig | Nil;
+}
 
 /**
  * Type-safe delay configuration with strategy-specific time constraints.
@@ -85,6 +83,22 @@ export type PollRetryConfig<T> =
   | { limit?: number; consecutiveOnly?: boolean; strategy?: never; time?: never };
 
 /**
+ * Type-safe pause configuration for polling.
+ *
+ * **Options:**
+ * - "notifier": Observable<boolean> that emits true to pause, false to resume. Use to pause at will.
+ *   If it never emits, polling starts (same as resume). To start paused, use an observable that
+ *   emits true initially (e.g. BehaviorSubject(true)).
+ * - "whenHidden": Pause polling automatically when tab is hidden (if applicable)
+ *
+ * @default { notifier: false, whenHidden: true }
+ */
+export interface PollPauseConfig {
+  notifier?: Observable<boolean> | Nil;
+  whenHidden?: boolean | Nil;
+}
+
+/**
  * Extended configuration that includes computed time producer functions
  */
 export type ExtendedPollConfig<T> = NormalizedPollConfig<T> & {
@@ -95,27 +109,35 @@ export type ExtendedPollConfig<T> = NormalizedPollConfig<T> & {
 /**
  * Normalized configuration with all optional fields resolved to their default values
  */
-export type NormalizedPollConfig<T> = {
+export interface NormalizedPollConfig<T> {
   type: PollType;
   delay: NormalizedPollDelayConfig<T>;
   retry: NormalizedPollRetryConfig<T>;
-  pauseWhenHidden: boolean;
-};
+  pause: NormalizedPollPauseConfig;
+}
 
 /**
  * Normalized delay configuration with resolved defaults
  */
-export type NormalizedPollDelayConfig<T> = {
+export interface NormalizedPollDelayConfig<T> {
   time: number | MinMax | DynamicFunction<T>;
   strategy: StrategyType;
-};
+}
 
 /**
  * Normalized retry configuration with resolved defaults
  */
-export type NormalizedPollRetryConfig<T> = {
+export interface NormalizedPollRetryConfig<T> {
   time: number | MinMax | DynamicFunction<T>;
   strategy: StrategyType;
   limit: number;
   consecutiveOnly: boolean;
-};
+}
+
+/**
+ * Normalized pause configuration
+ */
+export interface NormalizedPollPauseConfig {
+  notifier: Observable<boolean>;
+  whenHidden: boolean;
+}

@@ -1,12 +1,13 @@
 import { getStrategyTimeProducer } from '../../src/common/strategies';
-import { pollType } from '../../src/constants/poll.const';
 import { strategyType } from '../../src/constants/strategies.const';
-import { NormalizedPollConfig } from '../../src/types/config.type';
 import { PollState } from '../../src/types/poll.type';
 import { DynamicFunction } from '../../src/types/strategies.type';
+import { createBaseNormalizedConfig } from '../_mocks/config.mock';
+import { createMockState } from '../_mocks/state.mock';
 
 jest.mock('../../src/common/utils', () => ({
-  randomNumber: jest.fn((min: number, max: number) => min + (max - min) / 2),
+  ...jest.requireActual('../../src/common/utils'),
+  ...require('../_mocks/utils.mock'),
 }));
 
 beforeEach(() => {
@@ -14,35 +15,12 @@ beforeEach(() => {
 });
 
 describe('getStrategyTimeProducer', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createMockState = (pollCount = 3, retryCount = 2, consecutiveRetryCount = 1): PollState<any> => ({
-    pollCount,
-    retryCount,
-    consecutiveRetryCount,
-    value: undefined,
-    error: undefined,
-  });
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const createBaseConfig = (): NormalizedPollConfig<any> => ({
-    type: pollType.INTERVAL,
-    pauseWhenHidden: true,
-    delay: {
-      time: 1000,
-      strategy: strategyType.CONSTANT,
-    },
-    retry: {
-      time: 500,
-      strategy: strategyType.CONSTANT,
-      limit: 3,
-      consecutiveOnly: false,
-    },
-  });
+  const createBaseConfig = createBaseNormalizedConfig;
 
   describe('strategies', () => {
     it('should have time producers for all types', () => {
       const config = createBaseConfig();
-      const state = createMockState();
+      const state = createMockState({ pollCount: 3, retryCount: 2, consecutiveRetryCount: 1 });
 
       Object.values(strategyType).forEach((strategy) => {
         config.delay.strategy = strategy;
@@ -70,7 +48,7 @@ describe('getStrategyTimeProducer', () => {
       config.delay.strategy = strategyType.CONSTANT;
 
       const producer = getStrategyTimeProducer('delay', config);
-      const state = createMockState();
+      const state = createMockState({ pollCount: 3, retryCount: 2, consecutiveRetryCount: 1 });
 
       expect(producer(state)).toBe(1000);
     });
@@ -81,7 +59,7 @@ describe('getStrategyTimeProducer', () => {
       config.retry.strategy = strategyType.CONSTANT;
 
       const producer = getStrategyTimeProducer('retry', config);
-      const state = createMockState();
+      const state = createMockState({ pollCount: 3, retryCount: 2, consecutiveRetryCount: 1 });
 
       expect(producer(state)).toBe(500);
     });
@@ -94,7 +72,7 @@ describe('getStrategyTimeProducer', () => {
       config.delay.strategy = strategyType.LINEAR;
 
       const producer = getStrategyTimeProducer('delay', config);
-      const state = createMockState(5); // pollCount = 5
+      const state = createMockState({ pollCount: 5 });
 
       expect(producer(state)).toBe(500); // 5 * 100
     });
@@ -106,7 +84,7 @@ describe('getStrategyTimeProducer', () => {
       config.retry.consecutiveOnly = false;
 
       const producer = getStrategyTimeProducer('retry', config);
-      const state = createMockState(3, 4, 2); // retryCount = 4
+      const state = createMockState({ pollCount: 3, retryCount: 4, consecutiveRetryCount: 2 });
 
       expect(producer(state)).toBe(800); // 4 * 200
     });
@@ -118,7 +96,7 @@ describe('getStrategyTimeProducer', () => {
       config.retry.consecutiveOnly = true;
 
       const producer = getStrategyTimeProducer('retry', config);
-      const state = createMockState(3, 4, 2); // consecutiveRetryCount = 2
+      const state = createMockState({ pollCount: 3, retryCount: 4, consecutiveRetryCount: 2 });
 
       expect(producer(state)).toBe(600); // 2 * 300
     });
@@ -131,7 +109,7 @@ describe('getStrategyTimeProducer', () => {
       config.delay.strategy = strategyType.EXPONENTIAL;
 
       const producer = getStrategyTimeProducer('delay', config);
-      const state = createMockState(4); // pollCount = 4
+      const state = createMockState({ pollCount: 4 });
 
       expect(producer(state)).toBe(800); // 2^(4-1) * 100 = 8 * 100
     });
@@ -143,7 +121,7 @@ describe('getStrategyTimeProducer', () => {
       config.retry.consecutiveOnly = false;
 
       const producer = getStrategyTimeProducer('retry', config);
-      const state = createMockState(3, 3, 2); // retryCount = 3
+      const state = createMockState({ pollCount: 3, retryCount: 3, consecutiveRetryCount: 2 });
 
       expect(producer(state)).toBe(200); // 2^(3-1) * 50 = 4 * 50
     });
@@ -155,7 +133,7 @@ describe('getStrategyTimeProducer', () => {
       config.retry.consecutiveOnly = true;
 
       const producer = getStrategyTimeProducer('retry', config);
-      const state = createMockState(3, 4, 3); // consecutiveRetryCount = 3
+      const state = createMockState({ pollCount: 3, retryCount: 4, consecutiveRetryCount: 3 });
 
       expect(producer(state)).toBe(300); // 2^(3-1) * 75 = 4 * 75
     });
@@ -168,7 +146,7 @@ describe('getStrategyTimeProducer', () => {
       config.delay.strategy = strategyType.RANDOM;
 
       const producer = getStrategyTimeProducer('delay', config);
-      const state = createMockState();
+      const state = createMockState({ pollCount: 3, retryCount: 2, consecutiveRetryCount: 1 });
 
       // Mocked to return middle value
       expect(producer(state)).toBe(300); // 100 + (500-100)/2
@@ -180,7 +158,7 @@ describe('getStrategyTimeProducer', () => {
       config.retry.strategy = strategyType.RANDOM;
 
       const producer = getStrategyTimeProducer('retry', config);
-      const state = createMockState();
+      const state = createMockState({ pollCount: 3, retryCount: 2, consecutiveRetryCount: 1 });
 
       // Mocked to return middle value
       expect(producer(state)).toBe(125); // 50 + (200-50)/2
@@ -196,7 +174,7 @@ describe('getStrategyTimeProducer', () => {
       config.delay.strategy = strategyType.DYNAMIC;
 
       const producer = getStrategyTimeProducer('delay', config);
-      const state = createMockState(6); // pollCount = 6
+      const state = createMockState({ pollCount: 6 });
 
       const result = producer(state);
 
@@ -212,7 +190,7 @@ describe('getStrategyTimeProducer', () => {
       config.retry.strategy = strategyType.DYNAMIC;
 
       const producer = getStrategyTimeProducer('retry', config);
-      const state = createMockState(3, 4, 2); // retryCount = 4
+      const state = createMockState({ pollCount: 3, retryCount: 4, consecutiveRetryCount: 2 });
 
       const result = producer(state);
 
@@ -227,7 +205,7 @@ describe('getStrategyTimeProducer', () => {
       config.delay.strategy = strategyType.DYNAMIC;
 
       const producer = getStrategyTimeProducer('delay', config);
-      const state = createMockState();
+      const state = createMockState({ pollCount: 3, retryCount: 2, consecutiveRetryCount: 1 });
 
       const result = producer(state);
 

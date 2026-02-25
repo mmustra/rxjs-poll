@@ -1,4 +1,5 @@
 import { NormalizedPollConfig } from '../types/config.type';
+import { defaultNotifier$ } from './notifier.const';
 import { pollType } from './poll.const';
 import { strategyType } from './strategies.const';
 
@@ -14,5 +15,8 @@ export const defaultConfig = {
     limit: 3,
     consecutiveOnly: true,
   },
-  pauseWhenHidden: true,
+  pause: {
+    notifier: defaultNotifier$,
+    whenHidden: true,
+  },
 } as const satisfies NormalizedPollConfig<unknown>;

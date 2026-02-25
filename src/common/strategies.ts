@@ -1,3 +1,4 @@
+import { pollMode } from '../constants/poll.const';
 import { NormalizedPollConfig } from '../types/config.type';
 import { PollMode, PollState, PollStateKeys } from '../types/poll.type';
 import { DynamicFunction } from '../types/strategies.type';
@@ -6,7 +7,7 @@ import { randomNumber } from './utils';
 
 export function getStrategyTimeProducer<T>(mode: PollMode, config: NormalizedPollConfig<T>): DynamicFunction<T> {
   const { strategy, time } = config[mode];
-  const isDelayMode = mode === 'delay';
+  const isDelayMode = mode === pollMode.DELAY;
   const isConsecutive = config.retry.consecutiveOnly;
   let timeProducer: DynamicFunction<T>;
   let attemptKey: PollStateKeys;

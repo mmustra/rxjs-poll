@@ -13,9 +13,8 @@ A flexible RxJS operator library that enables polling on any completed observabl
 
 - **Two polling types**: `repeat` and `interval` to suit different use cases
 - **Timing strategies**: `constant`, `linear`, `exponential`, `random` and `dynamic` (custom logic)
-- **Auto-pause**: Automatically pause/resume polling based on page visibility (browser only)
-- **Reliable execution**: First and in-flight cycles (poll or retry) guaranteed
-- **Flexible retries**: Control retry attempts with consecutive or total counting modes
+- **Pause controls**: `notifier` and/or `when hidden` (browser; in-flight emission guaranteed)
+- **Flexible retries**: Limit attempts on either `consecutive` or `total` errors
 - **Input validation**: Guards against unexpected input time values
 - **Cross-platform**: Works in both browser and Node.js environments
 - **Modern compatibility**: Compatible with RxJS v7+
@@ -31,13 +30,13 @@ npm install rxjs-poll --save
 
 Polling is essential when you need to repeatedly check for updates from sources that don't provide real-time notifications. Common scenarios include monitoring HTTP API endpoints for status changes, watching DOM elements for state updates, or periodically sampling data streams.
 
-This operator cleanly separates polling concerns from your core observable logic. It waits for your source observable to complete per polling type, then schedules the next poll based on your configuration. The architecture distinguishes between normal polling delays and error retry scenarios, giving you precise control over both success and failure timing strategies.
+This operator polls by re-subscribing to your source observable after each completion, with intervals determined by the selected polling type. It distinguishes between normal polling delays and error retry scenarios, giving you precise control over both success and failure timing. Polling can be paused via an external notifier (direct emission control) or automatically when the browser tab becomes hidden (with first and in-flight emissions guaranteed).
 
 ## 🧪 Usage Examples
 
 ### Default Configuration
 
-[▶️ Live Demo](https://stackblitz.com/edit/rxjs-xdf2x4vx?devToolsHeight=100&file=index.ts)
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-7wpqq8ix?devToolsHeight=50&file=index.ts)
 
 Plug and play - just add the operator to your pipe and start polling.
 
@@ -55,7 +54,7 @@ request$
 
 ### Strategy-Based Configuration
 
-[▶️ Live Demo](https://stackblitz.com/edit/rxjs-vrefdzj1?devToolsHeight=100&file=index.ts)
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-mnlpyjya?devToolsHeight=50&file=index.ts)
 
 Use built-in strategies for easy timing control.
 
@@ -82,7 +81,7 @@ request$
 
 ### Advanced Dynamic Strategies
 
-[▶️ Live Demo](https://stackblitz.com/edit/rxjs-6fmgfij8?devToolsHeight=100&file=index.ts)
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-guldaznr?devToolsHeight=50&file=index.ts)
 
 Implement complex polling strategies with dynamic timing based on poll state.
 
@@ -94,12 +93,12 @@ request$
   .pipe(
     poll({
       delay: {
-        /** Adaptive polling based on response data */
+        /* Adaptive polling based on response data */
         strategy: 'dynamic',
         time: ({ value }) => (value?.items.length ? 1000 : 500),
       },
       retry: {
-        /** Custom exponential backoff with jitter */
+        /* Custom exponential backoff with jitter */
         strategy: 'dynamic',
         time: ({ consecutiveRetryCount }) => {
           const exponential = Math.pow(2, consecutiveRetryCount - 1) * 1000;
@@ -115,11 +114,41 @@ request$
   .subscribe({ next: console.log });
 ```
 
+### Pause With Notifier
+
+Control polling from outside by passing an `Observable<boolean>` as `pause.notifier`: emit `true` to pause and `false` to resume. If the notifier never emits, polling starts (same as resume). To start paused, use an observable that emits `true` initially (e.g. `new BehaviorSubject(true)`). You can combine it with `whenHidden: true` so both your stream and tab visibility affect pausing.
+
+[▶️ Live Demo](https://stackblitz.com/edit/rxjs-yn2ewfbm?devToolsHeight=50&file=index.ts)
+
+```typescript
+import { poll } from 'rxjs-poll';
+import { fromEvent } from 'rxjs';
+import { map, scan, startWith, takeWhile } from 'rxjs';
+
+const click$ = fromEvent(document, 'click').pipe(
+  scan((isPaused) => !isPaused, false)
+);
+
+request$
+  .pipe(
+    poll({
+      pause: {
+        notifier: click$,
+        whenHidden: false, // set true (default) to also pause when tab hidden
+      },
+    }),
+    takeWhile(({ status }) => status !== 'done', true)
+  )
+  .subscribe({ next: console.log });
+
+// Now, click anywhere on the page to toggle pause/resume
+```
+
 ## 📋 API Reference
 
 ### `poll(config?: PollConfig)`
 
-Creates a polling operator that will begin polling once the source observable completes.
+Creates a polling operator that manages the source observable's subscription lifecycle.
 
 #### PollConfig
 
@@ -206,14 +235,29 @@ interface PollConfig {
     consecutiveOnly?: boolean;
   };
 
+
   /**
-   * [Browser only] Controls polling behavior when page isn't visible
-   * - true: Pause polling when tab isn't active, and resume on active
-   * - false: Poll even when tab isn't focused
-   * @default true
-   * @note Every started cycle (poll or retry) finishes before pausing
+   * Configuration for pause behavior
    */
-  pauseWhenHidden?: boolean;
+  pause?: {
+    /**
+     * Observable that emits true to pause, false to resume
+     * @default false
+     * @note
+     * - Interrupts polling/retrying cycles
+     * - Can pause first emission
+     * - Defaults to false if no initial emission
+     */
+    notifier?: Observable<boolean>;
+    /**
+     * [Browser only] When true, polling pauses if tab isn't visible
+     * @default true
+     * @note
+     * - Polling/retrying cycles finish before pausing
+     * - First emission guaranteed
+     */
+    whenHidden?: boolean;
+  };
 }
 ```
 
@@ -245,8 +289,9 @@ interface PollState<T> {
 
 ## 📚 Additional Resources
 
+- **[V3 Changes](docs/V3_CHANGES.md)** - v2→v3 overview and migration steps
+- **[V2 Changes](docs/V2_CHANGES.md)** - v1→v2 overview and migration steps
 - **[Troubleshooting Guide](docs/TROUBLESHOOTING.md)** - Common issues and solutions
-- **[V2 Changes](docs/V2_CHANGES.md)** - Overview of the changes and migration steps
 
 ## 🤝 Contributing
 

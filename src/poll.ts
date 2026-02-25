@@ -1,8 +1,7 @@
 import { MonoTypeOperatorFunction } from 'rxjs';
 
 import { extendConfig } from './common/config';
-import { PollService } from './common/service';
-import { createPoller$ } from './observables/factory';
+import { createPoller$ } from './poller/create-poller';
 import { PollConfig } from './types/config.type';
 import { Nil } from './types/utils.type';
 
@@ -27,14 +26,13 @@ import { Nil } from './types/utils.type';
  * ```
  *
  * @param config - {@link PollConfig} object used for configuration
- * @return Function that returns an Observable handling resubscription \
+ * @returns Function that returns an Observable handling resubscription \
  * to the source on complete or error
  */
 export function poll<T>(config?: PollConfig<T> | Nil): MonoTypeOperatorFunction<T> {
   return (source$) => {
     const extendedConfig = extendConfig(config);
-    const pollService = new PollService(extendedConfig);
-    const poller$ = createPoller$(source$, pollService);
+    const poller$ = createPoller$(source$, extendedConfig);
 
     return poller$;
   };
