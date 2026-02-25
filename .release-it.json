@@ -9,7 +9,10 @@
   "github": {
     "release": true
   },
-  "npm": { "publishArgs": ["--access public", "--provenance", "--tag v2-lts"] },
+  "npm": {
+    "tag": "v2-lts",
+    "publishArgs": ["--access public", "--provenance"]
+  },
   "hooks": {
     "before:init": ["git pull origin v2", "npm run lint", "npm run test"],
     "before:bump": ["npm run build", "npm run test:modules"],
