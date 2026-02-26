@@ -3,7 +3,8 @@ import tsparser from '@typescript-eslint/parser';
 import prettier from 'eslint-plugin-prettier';
 import unusedImports from 'eslint-plugin-unused-imports';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
-import importPlugin from 'eslint-plugin-import';
+//TODO: Add back once library supports eslint 10+
+//import importPlugin from 'eslint-plugin-import';
 import jestFormatting from 'eslint-plugin-jest-formatting';
 import prettierConfig from 'eslint-config-prettier';
 import { resolve, dirname } from 'path';
@@ -35,7 +36,7 @@ export default [
       prettier: prettier,
       'unused-imports': unusedImports,
       'simple-import-sort': simpleImportSort,
-      import: importPlugin,
+      //import: importPlugin,
       'jest-formatting': jestFormatting,
     },
     rules: {
@@ -74,13 +75,13 @@ export default [
         },
       ],
 
-      // Import organization and sorting
-      'simple-import-sort/imports': 'error',
-      'simple-import-sort/exports': 'error',
-      'import/first': 'error',
-      'import/newline-after-import': 'error',
-      'import/no-duplicates': 'error',
-      'import/order': 'off', // Using simple-import-sort instead
+      //// Import organization and sorting
+      //'simple-import-sort/imports': 'error',
+      //'simple-import-sort/exports': 'error',
+      //'import/first': 'error',
+      //'import/newline-after-import': 'error',
+      //'import/no-duplicates': 'error',
+      //'import/order': 'off', // Using simple-import-sort instead
 
       // Code quality and best practices
       'no-console': ['warn', { allow: ['warn', 'error'] }],
