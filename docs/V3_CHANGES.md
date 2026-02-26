@@ -8,7 +8,7 @@
 
 ### Pause at will with `notifier`
 
-You can pause and resume polling at any time by providing `pause.notifier`: an `Observable<boolean>` that emits `true` to pause and `false` to resume. When combined with `pause.whenHidden`, custom pause and visibility-based pause are merged so either can pause polling.
+You can pause and resume polling at any time by providing `pause.notifier`: an `Observable<boolean>` that emits `true` to pause and `false` to resume. When combined with `pause.whenHidden`, custom pause and visibility-based pause are merged so either can pause polling. If `pause.notifier` errors, the error is ignored: polling does not error or complete because of notifier failures, and the previous pause state is preserved.
 
 **Example**:
 

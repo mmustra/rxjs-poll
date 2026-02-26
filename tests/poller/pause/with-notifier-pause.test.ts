@@ -77,4 +77,14 @@ describe('withNotifierPause$', () => {
       expectObservable(result$).toBe('---------');
     });
   });
+
+  it('should not error nor close when notifier$ errors (guard keeps flow alive with NEVER)', () => {
+    testScheduler.run(({ cold, expectObservable }) => {
+      const notifier$ = cold('f-#', { f: false });
+      const poller$ = cold('a-b-c|', { a: 'A', b: 'B', c: 'C' });
+      const result$ = withNotifierPause$(poller$, notifier$).pipe(take(3));
+
+      expectObservable(result$).toBe('a-b-(c|)', { a: 'A', b: 'B', c: 'C' });
+    });
+  });
 });

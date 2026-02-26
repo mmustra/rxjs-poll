@@ -54,6 +54,12 @@ request$
   .subscribe();
 ```
 
+### Notifier Errors and Polling
+
+**Question — Will notifier errors stop polling?**
+
+No. If you use `pause.notifier`, errors from that observable are caught internally. Polling will **not** error or complete because of notifier failures; the previous pause state is kept. If you need to react to notifier errors, handle them before passing the observable to `pause.notifier` (e.g. with `catchError`).
+
 ### Polling Happens Too Fast/Slow
 
 **Problem — Using interval type with slow sources**

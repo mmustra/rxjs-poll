@@ -116,7 +116,7 @@ request$
 
 ### Pause With Notifier
 
-Control polling from outside by passing an `Observable<boolean>` as `pause.notifier`: emit `true` to pause and `false` to resume. If the notifier never emits, polling starts (same as resume). To start paused, use an observable that emits `true` initially (e.g. `new BehaviorSubject(true)`). You can combine it with `whenHidden: true` so both your stream and tab visibility affect pausing.
+Control polling from outside by passing an `Observable<boolean>` as `pause.notifier`: emit `true` to pause and `false` to resume. If the notifier never emits, polling starts (same as resume). To start paused, use an observable that emits `true` initially (e.g. `new BehaviorSubject(true)`). You can combine it with `whenHidden: true` so both your stream and tab visibility affect pausing. If the notifier observable errors, the error is caught: polling does not error or complete because of notifier failures, and the previous pause state is kept.
 
 [▶️ Live Demo](https://stackblitz.com/edit/rxjs-yn2ewfbm?devToolsHeight=50&file=index.ts)
 
@@ -247,6 +247,7 @@ interface PollConfig {
      * - Interrupts polling/retrying cycles
      * - Can pause first emission
      * - Defaults to false if no initial emission
+     * - Errors from this notifier are caught and do NOT error/complete polling
      */
     notifier?: Observable<boolean>;
     /**
