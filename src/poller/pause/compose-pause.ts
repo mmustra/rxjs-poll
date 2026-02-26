@@ -1,6 +1,5 @@
 import { Observable } from 'rxjs';
 
-import { PollComposer } from '../../types/poller-composer.type';
 import { ComposedPollerContext, PollerContext } from '../../types/poller-context.type';
 import { getPauseMode } from './get-pause-mode';
 import { withHiddenPause$ } from './with-hidden-pause';
@@ -13,7 +12,7 @@ import { withNotifierPause$ } from './with-notifier-pause';
  * @param ctx - Poller context
  * @returns Context with poller$ (and cycler$ when using cycle-based pause) set
  */
-export const composePause$: PollComposer = <T>(ctx: PollerContext<T>): ComposedPollerContext<T> => {
+export function composePause$<T>(ctx: PollerContext<T>): ComposedPollerContext<T> {
   const { source$, pollService, factory } = ctx;
   const pauseMode = getPauseMode(ctx);
 
@@ -55,4 +54,4 @@ export const composePause$: PollComposer = <T>(ctx: PollerContext<T>): ComposedP
   }
 
   return ctx as ComposedPollerContext<T>;
-};
+}
