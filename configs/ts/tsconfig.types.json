@@ -5,6 +5,7 @@
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "Bundler",
+    "rootDir": "../../src",
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,

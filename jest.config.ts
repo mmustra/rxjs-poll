@@ -14,7 +14,7 @@ const jestConfig: JestConfigWithTsJest = {
     '\\.[jt]sx?$': [
       'ts-jest',
       {
-        tsconfig: './tsconfig.json',
+        tsconfig: './configs/ts/tsconfig.jest.json',
       },
     ],
   },

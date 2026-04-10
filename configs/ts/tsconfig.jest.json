@@ -1,0 +1,8 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "types": ["jest", "node"],
+    "lib": ["ES2017", "DOM", "ESNext"]
+  },
+  "include": ["../../src/**/*.ts", "../../tests/**/*.ts", "../../jest.config.ts"]
+}
