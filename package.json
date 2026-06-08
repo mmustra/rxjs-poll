@@ -112,7 +112,7 @@
     "fs-extra": "11.3.5",
     "husky": "9.1.7",
     "is-ci": "4.1.0",
-    "jest": "30.3.0",
+    "jest": "30.4.2",
     "jest-environment-jsdom": "30.4.1",
     "jest-environment-node": "30.4.1",
     "lint-staged": "16.4.0",
