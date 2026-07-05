@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Smoke test release-it
+        run: npx release-it --dry-run --ci --no-git --no-npm.publish --no-github.release --config configs/release-it/ci-smoke.json
+
       - name: Lint
         run: npm run lint
 
