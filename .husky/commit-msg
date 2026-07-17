@@ -1,1 +1,9 @@
+#!/usr/bin/env sh
+
+# Load nvm when Git/GUI invokes hooks without an interactive shell PATH
+if ! command -v npm >/dev/null 2>&1; then
+  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
+fi
+
 npm run util:commitlint -- --edit ${1}
