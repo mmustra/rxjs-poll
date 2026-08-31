@@ -113,7 +113,7 @@
     "husky": "9.1.7",
     "is-ci": "4.1.0",
     "jest": "30.4.2",
-    "jest-environment-jsdom": "30.4.1",
+    "jest-environment-jsdom": "30.5.0",
     "jest-environment-node": "30.4.1",
     "lint-staged": "17.3.0",
     "release-it": "21.0.2",
