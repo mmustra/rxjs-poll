@@ -1,9 +1,8 @@
 #!/usr/bin/env sh
 
-# Load nvm when Git/GUI invokes hooks without an interactive shell PATH
-if ! command -v npm >/dev/null 2>&1; then
-  export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
-  [ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
-fi
+# Load mise or nvm when Git/GUI invokes hooks without an interactive shell PATH
+export PATH="${HOME}/.local/share/mise/shims:${PATH}"
+export NVM_DIR="${NVM_DIR:-$HOME/.nvm}"
+[ -s "$NVM_DIR/nvm.sh" ] && . "$NVM_DIR/nvm.sh"
 
 npm run util:lint-staged
