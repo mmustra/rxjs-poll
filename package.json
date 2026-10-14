@@ -129,7 +129,7 @@
     "@emnapi/runtime": "1.11.2",
     "@emnapi/wasi-threads": "1.2.2",
     "@babel/core": "^7.29.6",
-    "basic-ftp": "^5.2.0",
+    "basic-ftp": "^6.2.1",
     "defu": "^6.1.5",
     "flatted": "^3.4.2",
     "js-yaml@3": "^3.15.0",
