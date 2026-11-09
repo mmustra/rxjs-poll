@@ -105,7 +105,7 @@
     "cross-env": "10.1.0",
     "eslint": "10.14.0",
     "eslint-config-prettier": "10.1.8",
-    "eslint-plugin-jest-formatting": "3.1.0",
+    "eslint-plugin-jest-formatting": "4.0.0",
     "eslint-plugin-prettier": "5.5.7",
     "eslint-plugin-simple-import-sort": "14.0.0",
     "eslint-plugin-unused-imports": "4.4.1",
